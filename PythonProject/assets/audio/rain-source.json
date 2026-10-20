@@ -1,0 +1,11 @@
+{
+  "title": "SV100344.ogg",
+  "author": "Shizhao",
+  "source": "https://commons.wikimedia.org/wiki/File:SV100344.ogg",
+  "download": "https://upload.wikimedia.org/wikipedia/commons/a/a0/SV100344.ogg",
+  "license": "Public domain (PD-self)",
+  "source_sha256": "9b450ab63ee42a5225a46f8ab2737f46d9f5c8a62bb270c93efdf9f3d4e9ce5e",
+  "changes": "Trim 0.25 s from each edge; collapse duplicated stereo to mono; remove rumble/DC; band-limit and downsample to 22050 Hz; level and soften isolated peaks; encode PCM16. Runtime uses 0.75 s equal-power overlap for looping.",
+  "sample_rate": 22050,
+  "seconds": 29.261814058956915
+}
