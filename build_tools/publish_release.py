@@ -14,17 +14,23 @@ import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
 REPOSITORY = 'Nguyen-Cong-Trung/Focus'
-TAG = 'v1.0.0'
+TAG = 'v1.0.0-installer.1'
 ARCHIVE = ROOT / 'releases/Focus-1.0.0-Windows-x64.zip'
+INSTALLER = ROOT / 'releases/Focus-Setup-1.0.0-Windows-x64.exe'
 
 
 def main():
     report = json.loads((ROOT / '.release-work/final-package-check.json').read_text(encoding='utf-8'))
     if not report.get('ok') or not report.get('frozen'):
         raise RuntimeError('The extracted release executable must pass its check before publishing.')
-    expected = (ROOT / 'releases/SHA256SUMS.txt').read_text().split()[0]
-    if hashlib.sha256(ARCHIVE.read_bytes()).hexdigest() != expected:
-        raise RuntimeError('Package checksum does not match.')
+    installer_check = json.loads((ROOT / '.release-work/installer-check.json').read_text(encoding='utf-8'))
+    if not installer_check.get('ok') or installer_check['installer_sha256'] != hashlib.sha256(INSTALLER.read_bytes()).hexdigest():
+        raise RuntimeError('This exact installer must pass the install/upgrade/uninstall check.')
+    checksums = dict((name, digest) for digest, name in
+                     (line.split(maxsplit=1) for line in (ROOT / 'releases/SHA256SUMS.txt').read_text().splitlines()))
+    for path in (INSTALLER, ARCHIVE):
+        if hashlib.sha256(path.read_bytes()).hexdigest() != checksums.get(path.name):
+            raise RuntimeError('Package checksum does not match: ' + path.name)
     subprocess.run(['git', 'diff', '--quiet', 'HEAD', '--'], cwd=ROOT, check=True)
     commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
     environment = os.environ.copy()
@@ -63,12 +69,12 @@ def main():
         raise RuntimeError('This release is already published; it will not be overwritten.')
     if release is None:
         release = request('POST', api + '/releases', {'tag_name': TAG, 'target_commitish': commit,
-            'name': 'Focus 1.0.0 — Spertulo Utility', 'draft': True, 'prerelease': False,
+            'name': 'Focus 1.0.0 — Windows Installer', 'draft': True, 'prerelease': False,
             'body': (ROOT / 'build_tools/release_notes.md').read_text(encoding='utf-8')})
     upload_url = release['upload_url'].split('{', 1)[0]
     if urllib.parse.urlsplit(upload_url).hostname != 'uploads.github.com':
         raise RuntimeError('Unexpected upload host')
-    for path in (ARCHIVE, ROOT / 'releases/SHA256SUMS.txt'):
+    for path in (INSTALLER, ARCHIVE, ROOT / 'releases/SHA256SUMS.txt'):
         digest = 'sha256:' + hashlib.sha256(path.read_bytes()).hexdigest()
         existing = next((a for a in release['assets'] if a['name'] == path.name), None)
         if existing:

@@ -6,6 +6,9 @@ from pathlib import Path
 
 
 class SingleInstance:
+    # Stable name shared with Setup/Uninstall, independent of bundle location.
+    INSTALLER_MUTEX = 'Local\\Spertulo.Focus.Running'
+
     def __init__(self, project_path):
         self.is_primary = True
         self._handles = []
@@ -40,6 +43,11 @@ class SingleInstance:
             raise C.WinError(error)
         self._handles.append(mutex)
         self.is_primary = error != 183  # ERROR_ALREADY_EXISTS
+        running = kernel.CreateMutexW(None, False, self.INSTALLER_MUTEX)
+        if not running:
+            self.close()
+            raise C.WinError(C.get_last_error())
+        self._handles.append(running)
 
     def activate(self):
         return bool(self._event and self._kernel.SetEvent(self._event))

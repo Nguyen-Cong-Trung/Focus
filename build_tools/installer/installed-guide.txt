@@ -1,0 +1,29 @@
+Focus 1.0.0 — Spertulo Utility
+Created by Nguyễn Công Trung
+
+Open Focus from the Start menu. A desktop shortcut is optional during setup.
+Python installation and an internet connection are not required to run Focus.
+
+Updating
+Quit Focus from the tray menu before installing a newer version. Run the new
+installer and keep the same installation folder. Your settings, plans, history
+and imported recordings remain in %USERPROFILE%\.deepfocus.
+
+Uninstalling
+Open Windows Settings > Apps > Installed apps > Focus > Uninstall, or use
+Uninstall Focus in the Start menu. Quit Focus first, including its tray icon.
+Uninstall removes the program and its shortcuts, while keeping your workspace.
+Use Settings > Your data inside Focus to back up your workspace.
+
+Audio and closing
+Closing the window stops all sounds. If Keep working in the tray is enabled,
+the timer continues in the notification area. Choose Quit Focus to exit fully.
+
+Website blocking may require administrator access. Shutdown Timer schedules a
+Windows shutdown only after confirmation. Save open documents before using it.
+
+More tools: https://github.com/Nguyen-Cong-Trung
+Help: https://github.com/Nguyen-Cong-Trung/Focus/issues
+Email: trungcong0106a7@gmail.com
+
+Dependency notices are in THIRD-PARTY-NOTICES.txt and _internal/licenses.

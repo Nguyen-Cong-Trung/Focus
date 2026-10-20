@@ -8,7 +8,13 @@ A personal workspace for focused work, planning and a calmer daily rhythm.
 
 [**Download Focus for Windows**](https://github.com/Nguyen-Cong-Trung/Focus/releases/latest)
 
-Download `Focus-1.0.0-Windows-x64.zip` from Releases, extract the whole folder, and open **Focus.exe**. **Python installation is not required.** Keep the `_internal` folder beside the executable. Run **Create Desktop Shortcut.cmd** if you want a desktop shortcut. `SHA256SUMS.txt` is included with the release for integrity verification.
+Download **Focus-Setup-1.0.0-Windows-x64.exe** from Releases and follow the English setup wizard. It installs for your Windows account, creates Start Menu entries and offers a desktop shortcut. **Python installation is not required.**
+
+To update, choose **Quit Focus** from the tray menu and run the newer installer. It remembers the installation folder and keeps your workspace. To remove the program, use **Windows Settings → Apps → Installed apps → Focus → Uninstall**. Your personal workspace is kept.
+
+The installer currently has **no Authenticode signature**: Windows may display an unknown-publisher or SmartScreen prompt. Download from this repository and verify the file with `SHA256SUMS.txt`; a checksum verifies integrity, not publisher identity.
+
+Prefer a portable copy? Download `Focus-1.0.0-Windows-x64.zip`, extract the complete folder and open **Focus.exe**. Keep `_internal` beside it. **Create Desktop Shortcut.cmd** is available in the portable folder.
 
 ## What you can do
 

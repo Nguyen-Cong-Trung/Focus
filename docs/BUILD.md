@@ -1,5 +1,7 @@
 # Building the Windows portable release
 
+For the recommended Windows installer, continue with [INSTALLER.md](INSTALLER.md) after building this bundle.
+
 Use 64-bit Python 3.12 on Windows. Runtime dependencies are pinned to the versions tested for Focus 1.0.0.
 
 ```powershell

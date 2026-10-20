@@ -87,6 +87,32 @@ class RuntimeLifecycleTests(unittest.TestCase):
             finally:
                 reopened.close()
 
+    @unittest.skipUnless(os.name == 'nt', 'Windows named objects')
+    def test_installer_detects_app_even_when_bundle_path_changes(self):
+        import ctypes as C
+        from ctypes import wintypes as W
+        kernel = C.WinDLL('kernel32', use_last_error=True)
+        kernel.OpenMutexW.argtypes = [W.DWORD, W.BOOL, W.LPCWSTR]
+        kernel.OpenMutexW.restype = W.HANDLE
+        kernel.CloseHandle.argtypes = [W.HANDLE]
+        kernel.CloseHandle.restype = W.BOOL
+        def exists():
+            handle = kernel.OpenMutexW(0x100000, False, SingleInstance.INSTALLER_MUTEX)
+            if handle:
+                kernel.CloseHandle(handle)
+            return bool(handle)
+        first = SingleInstance('installer-test-first')
+        second = SingleInstance('installer-test-other-location')
+        try:
+            self.assertTrue(first.is_primary)
+            self.assertTrue(second.is_primary)
+            self.assertTrue(exists())
+            first.close()
+            self.assertTrue(exists())
+        finally:
+            first.close()
+            second.close()
+
     def test_duplicate_entry_point_does_not_construct_another_app(self):
         import main
         guard = Mock(is_primary=False)
