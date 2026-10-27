@@ -1,32 +1,32 @@
-Focus **1.0.0** — Spertulo Utility, created by **Nguyễn Công Trung**.
+Focus **1.0.1** — Spertulo Utility
 
-### Recommended download: Windows installer
+This maintenance release improves reliability when Focus runs alongside other applications and Windows features.
 
-Download **Focus-Setup-1.0.0-Windows-x64.exe** and follow the setup wizard. No Python installation or runtime download is required.
+### Fixes
 
-- Branded English setup, with light/dark appearance matching Windows.
-- Installs for the current Windows account; choose the installation folder.
-- Start Menu entries and an optional Desktop shortcut using the Focus logo.
-- Listed in Windows Settings → Apps → Installed apps, with version and publisher information.
-- Updates retain the installation folder, plans, settings, history and imported recordings.
-- Setup and uninstall ask you to quit Focus if it is running, including in the tray. They do not force-close your session.
-- Prevents installing an older version over a newer one and prevents installing inside the workspace folder.
-- Uninstall removes installed program files and shortcuts, keeps personal workspace data and unrelated files, and removes only startup entries belonging to that installation.
+- Installed, source and portable copies now coordinate around the same personal workspace, preventing two current copies from editing it at once.
+- Global shortcuts no longer consume other applications' keystrokes; stale callbacks and repeated key presses are controlled.
+- Fixed tray start/stop races, sign-in registry handle leaks and packaged startup commands.
+- Limited idle audio buffer caching to 64 MiB while preserving active playback. Cancelled/failed preparation releases oversized idle buffers.
+- Validate the copied WAV before importing, so recordings changed by another application are rejected safely.
+- A failed Windows/UI callback no longer stops timer ticks or subsequent completed operations. Audio/data buttons recover when work cannot be queued.
+- Planner checklist updates and reminder claims are transactional, preventing lost edits and duplicate notifications.
+- SQLite backup/restore stops waiting when an external lock exceeds its timeout.
+- Website blocking preserves unrelated hosts bytes and entries, rejects malformed owned sections, and protects writes from concurrent editors. Stopped app monitors cannot restart themselves after mode changes.
+- Includes existing control-size improvements and shutdown-reminder/control recovery fixes.
 
-Your workspace stays in `%USERPROFILE%\.deepfocus`. Back it up in **Settings → Your data**. Choose **Quit Focus** from the tray menu before updating or uninstalling.
+### Downloads
 
-### Portable alternative
+**Focus-Setup-1.0.1-Windows-x64.exe** is the recommended offline installer. Quit Focus (including its tray icon) before updating. Installation, Desktop/Start Menu options and uninstall retain your workspace in `%USERPROFILE%\.deepfocus`.
 
-**Focus-1.0.0-Windows-x64.zip**: extract the full folder, keep `_internal` beside **Focus.exe**, then launch. It does not register an uninstaller. Quit a portable copy before starting Setup.
+**Focus-1.0.1-Windows-x64.zip** is the portable alternative. Extract the complete folder and keep `_internal` beside **Focus.exe**. Python installation is not required for either download.
 
-### Verification and signing
+### Verification
 
-The installer passed a fresh install, installed executable diagnostics, an upgrade from simulated 0.9.0, downgrade rejection, running-app protection, shortcut/Windows registration checks and uninstall/data-retention checks. The source passed 106 unit/regression tests. Audio hardware, site/app blocking and OS shutdown are mocked in application diagnostics.
+171 unit/regression tests passed, plus cold light-theme startup, UI and close-lifecycle checks. A real Tk integration check exercised both themes, all nine views, resizing, mini player, audio device-loss simulation and timer pause/resume alongside two disposable Windows processes (an independent Tk app and a CPU worker). Separate native tests launched six competing processes and verified one workspace owner.
 
-**This release is not Authenticode-signed.** No code-signing certificate is available for the publisher yet. Windows may show an unknown-publisher or SmartScreen prompt. Download only from this repository. `SHA256SUMS.txt` verifies the downloaded files against this release; it is not a digital signature.
+Audio hardware, app termination, hosts modifications, actual shutdown and sign-in registration are mocked or redirected to disposable test resources. No user applications were closed and no Computer Use was used. These checks do not certify every driver, VPN, antivirus or Windows configuration. See the repository's `docs/QA-1.0.1.md` for results and limitations.
 
-The application version remains **1.0.0**. The release tag `v1.0.0-installer.1` identifies this installer revision and preserves the original portable release and its source history.
+### Signing
 
-### Included in Focus
-
-Focus timer, custom modes and distraction blocking; planner, schedules and checklists; seven offline sounds and personal WAV imports; Shutdown Timer; history, statistics, backup/restore; light/dark appearance; mini player and About/contact links.
+This release remains **unsigned** because a trusted publisher code-signing certificate is not available. Windows may show SmartScreen or an unknown-publisher prompt. `SHA256SUMS.txt` verifies file integrity; it is not a digital signature.

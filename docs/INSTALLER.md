@@ -1,6 +1,6 @@
 # Windows installer
 
-The recommended download is `Focus-Setup-1.0.0-Windows-x64.exe`. It is a single, offline, x64 Inno Setup 7.1.0 installer for Windows 10 (1809+) and Windows 11. Setup UI is English and adapts to the Windows light/dark preference.
+The recommended download is `Focus-Setup-1.0.1-Windows-x64.exe`. It is a single, offline, x64 Inno Setup 7.1.0 installer for Windows 10 (1809+) and Windows 11. Setup UI is English and adapts to the Windows light/dark preference.
 
 ## Install, update and remove
 
@@ -30,7 +30,7 @@ The builder composes installer artwork from the supplied logo and Inter fonts, c
 
 This Windows integration check executes the exact installer and uninstaller. It requires no existing installed Focus. It creates a test installation under `.release-work`, a uniquely named Start Menu group, and a temporary Desktop shortcut. An existing Desktop shortcut and startup values are backed up and restored in `finally`. It checks running-app rejection, workspace-directory rejection, per-user Windows registration, shortcuts, installed app diagnostics, upgrade from a simulated 0.9.0 executable, downgrade rejection, uninstall, startup cleanup and data retention. The simulated older version tests installation mechanics; it is not a claim to migrate an independently released 0.9.0 database schema. Existing workspace databases/settings must remain byte-identical. Tests do not operate real audio hardware, terminate apps or schedule shutdown.
 
-The publication script requires the exact installer's successful report and matching checksums. It uploads assets to a draft, verifies GitHub digests, then publishes. `v1.0.0-installer.1` is a packaging revision; the app version stays 1.0.0. Earlier published releases remain intact.
+The publication script requires the exact installer's successful report and matching checksums. It uploads assets to a draft, verifies GitHub digests, then publishes. `v1.0.1` identifies the current maintenance release. Earlier published releases remain intact.
 
 The recorded results are in [INSTALLER-QA.md](INSTALLER-QA.md).
 

@@ -1,11 +1,11 @@
-; Focus 1.0.0: per-user install, stable upgrade identity and preserved workspace.
+; Focus 1.0.1: per-user install, stable upgrade identity and preserved workspace.
 #ifndef BundleDir
   #define BundleDir "..\..\dist\Focus"
 #endif
 #ifndef ReleaseDir
   #define ReleaseDir "..\..\releases"
 #endif
-#define AppVersion "1.0.0"
+#define AppVersion "1.0.1"
 
 [Setup]
 AppId={{139698E0-3B7B-4867-AB38-C8B37B01C9E1}
@@ -31,7 +31,7 @@ OutputBaseFilename=Focus-Setup-{#AppVersion}-Windows-x64
 SetupIconFile=..\..\branding\focus.ico
 UninstallDisplayIcon={app}\Focus.exe
 UninstallDisplayName=Focus
-VersionInfoVersion=1.0.0.0
+VersionInfoVersion=1.0.1.0
 VersionInfoCompany=Spertulo Utility
 VersionInfoDescription=Focus Setup
 VersionInfoProductName=Focus
@@ -130,7 +130,7 @@ var
 begin
   Result := ValidateInstallFolder();
   if (Result = '') and GetVersionNumbers(ExpandConstant('{app}\Focus.exe'), VersionMS, VersionLS) then
-    if (VersionMS > $00010000) or ((VersionMS = $00010000) and (VersionLS > 0)) then
+    if (VersionMS > $00010000) or ((VersionMS = $00010000) and (VersionLS > $00010000)) then
       Result := 'A newer version of Focus is installed. Use the latest installer to keep your workspace compatible.';
 end;
 

@@ -34,21 +34,25 @@ class AppBlocker:
 
     def start_monitoring(self, app_names: list[str], interval: int = 30) -> None:
         self.stop_monitoring()
-        self._blocked_apps = app_names
-        self._stop_event.clear()
+        self._blocked_apps = list(app_names)
+        # A timed-out old worker must retain its signaled event. Clearing a
+        # shared event resurrected it when switching modes after a slow OS call.
+        self._stop_event = threading.Event()
         self._monitoring = True
         self._monitor_thread = threading.Thread(
             target=self._monitor_loop,
-            args=(app_names, interval),
+            args=(self._blocked_apps, interval, self._stop_event),
             daemon=True
         )
         self._monitor_thread.start()
 
-    def _monitor_loop(self, app_names: list[str], interval: int) -> None:
-        self.kill_apps(app_names)
-        while not self._stop_event.is_set():
-            self._stop_event.wait(interval)
-            if not self._stop_event.is_set():
+    def _monitor_loop(self, app_names: list[str], interval: int, stop_event=None) -> None:
+        stop_event = stop_event if stop_event is not None else self._stop_event
+        if not stop_event.is_set():
+            self.kill_apps(app_names)
+        while not stop_event.is_set():
+            stop_event.wait(interval)
+            if not stop_event.is_set():
                 self.kill_apps(app_names)
 
     def request_stop(self) -> None:

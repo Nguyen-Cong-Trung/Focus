@@ -1,51 +1,76 @@
+"""Global focus shortcut without consuming other applications' keystrokes."""
+import logging
 import keyboard
 import threading
 from typing import Callable, Optional
+
 
 class HotkeyManager:
     def __init__(self):
         self._enabled = False
         self._current_bind = ""
         self._callback: Optional[Callable] = None
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()
+        self._registrations = []
+        self._generation = 0
 
     def set_callback(self, callback: Callable):
-        """Set the function to call when hotkey is pressed."""
-        self._callback = callback
+        with self._lock:
+            self._callback = callback
+
+    def _remove_owned_locked(self):
+        remaining = []
+        for registration in self._registrations:
+            try:
+                # The returned registration owns exactly our hook. Removing by
+                # shortcut text can remove another component's matching hook.
+                keyboard.remove_hotkey(registration)
+            except Exception:
+                logging.getLogger(__name__).exception('Could not remove a Focus shortcut hook')
+                remaining.append(registration)
+        self._registrations = remaining
 
     def enable(self, bind: str = "ctrl+shift+space"):
-        """Enable the global hotkey."""
         with self._lock:
-            if self._enabled and self._current_bind:
-                try:
-                    keyboard.remove_hotkey(self._current_bind)
-                except Exception:
-                    pass
-            
-            self._current_bind = bind
+            if self._enabled and bind == self._current_bind:
+                return True
+            self._generation += 1
             self._enabled = False
-            
+            self._remove_owned_locked()
+            self._current_bind = bind
+            generation = self._generation
             try:
-                keyboard.add_hotkey(self._current_bind, self._on_hotkey, suppress=True)
+                registration = keyboard.add_hotkey(
+                    bind, lambda: self._on_hotkey(generation), suppress=False,
+                    trigger_on_release=True)
+                self._registrations.append(registration)
                 self._enabled = True
                 return True
-            except Exception as e:
-                import logging
-                logging.getLogger(__name__).exception("Could not enable hotkey")
+            except Exception:
+                logging.getLogger(__name__).exception('Could not enable hotkey')
                 return False
 
     def disable(self):
-        """Disable the global hotkey."""
         with self._lock:
-            if self._enabled and self._current_bind:
-                try:
-                    keyboard.remove_hotkey(self._current_bind)
-                except Exception:
-                    pass
+            # A listener may already have queued a callback from the old bind.
             self._enabled = False
+            self._generation += 1
+            self._remove_owned_locked()
 
-    def _on_hotkey(self):
-        """Called when hotkey is triggered."""
-        if self._callback:
-            # Call in a way that doesn't block the keyboard listener
-            threading.Thread(target=self._callback, daemon=True).start()
+    def _on_hotkey(self, generation):
+        with self._lock:
+            if not self._enabled or generation != self._generation:
+                return
+        threading.Thread(target=self._invoke, args=(generation,), daemon=True,
+                         name='focus-hotkey').start()
+
+    def _invoke(self, generation):
+        with self._lock:
+            if not self._enabled or generation != self._generation:
+                return
+            callback = self._callback
+        if callback:
+            try:
+                callback()
+            except Exception:
+                logging.getLogger(__name__).exception('Focus shortcut action failed')

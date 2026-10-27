@@ -18,14 +18,22 @@ def main():
         from core.release_check import run_release_check
         raise SystemExit(run_release_check(sys.argv[2]))
     from core.instance import SingleInstance
-    instance = SingleInstance(PROJECT_ROOT)
+    from utils.constants import DB_DIR
+    # Installed, portable and source copies all share one personal workspace.
+    instance = SingleInstance(DB_DIR)
     if not instance.is_primary:
         instance.activate()
         instance.close()
         return
-    from utils.constants import DB_DIR
+    try:
+        _run_primary(instance, DB_DIR)
+    finally:
+        instance.close()
+
+
+def _run_primary(instance, data_directory):
     from utils.logging_setup import setup_logging
-    setup_logging(DB_DIR)
+    setup_logging(data_directory)
     import logging
     # Import here to catch missing dependencies early
     try:
@@ -60,11 +68,8 @@ def main():
             input("Press Enter to exit...")
         sys.exit(1)
     finally:
-        try:
-            if app is not None:
-                app.shutdown_resources()
-        finally:
-            instance.close()
+        if app is not None:
+            app.shutdown_resources()
 
 
 if __name__ == "__main__":

@@ -16,3 +16,5 @@ Coverage includes queued and in-flight playback cancellation; X/tray close; glob
 Passing these tests verifies the exercised paths and package integrity. It does not certify every possible Windows/driver failure or replace listening on the target output device.
 
 See [installer acceptance checks](INSTALLER.md) for fresh install, upgrade, downgrade rejection, running-app protection, shortcuts, Windows registration and uninstall/data-retention verification.
+
+The 1.0.1 coexistence/debugging review is recorded in [QA-1.0.1.md](QA-1.0.1.md). It adds native multi-process, fake device-loss, locked database, concurrent planner and disposable hosts tests.

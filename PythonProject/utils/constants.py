@@ -8,7 +8,7 @@ _CONFIG_LOCK = threading.RLock()
 from enum import Enum
 
 APP_NAME = "Focus"
-APP_VERSION = "1.0.0"
+APP_VERSION = "1.0.1"
 APP_SUITE = "Spertulo Utility"
 
 WINDOW_WIDTH = 1240

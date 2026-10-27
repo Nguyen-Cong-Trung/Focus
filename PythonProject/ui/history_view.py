@@ -1,4 +1,7 @@
 """Paged focus history with planned and measured time shown separately."""
+from ui.metrics import (
+    CONTROL_FONT_SIZE, CONTROL_HEIGHT
+)
 import customtkinter as ctk
 from ui.panels import PageHeader, label, surface, rule
 from utils.constants import BG_PRIMARY, BG_CARD, TEXT_PRIMARY, TEXT_SECONDARY, HOVER_BG, ACCENT_CUSTOM, ICE
@@ -16,11 +19,11 @@ class HistoryView(ctk.CTkFrame):
         filters.grid(row=1,column=0,sticky='ew',padx=28,pady=(0,16))
         self.filter=ctk.CTkSegmentedButton(filters,values=['All','Completed','Stopped','Skipped'],
             command=self._filter,selected_color=ACCENT_CUSTOM,unselected_color=BG_CARD,
-            text_color=TEXT_PRIMARY,font=('Inter',12),height=34)
+            text_color=TEXT_PRIMARY,font=('Inter',CONTROL_FONT_SIZE),height=CONTROL_HEIGHT)
         self.filter.set('All')
         self.filter.pack(side='left')
-        ctk.CTkButton(filters,text='Refresh',width=82,height=34,fg_color=BG_CARD,text_color=TEXT_PRIMARY,
-            hover_color=HOVER_BG,command=self.refresh).pack(side='right')
+        ctk.CTkButton(filters,text='Refresh',width=82,height=CONTROL_HEIGHT,fg_color=BG_CARD,text_color=TEXT_PRIMARY,
+            hover_color=HOVER_BG,command=self.refresh, font=("Inter", CONTROL_FONT_SIZE)).pack(side='right')
         table=surface(self)
         table.grid(row=2,column=0,sticky='nsew',padx=28,pady=(0,16))
         table.grid_columnconfigure(0,weight=1)
@@ -39,10 +42,10 @@ class HistoryView(ctk.CTkFrame):
         self.summary=label(footer,'',11,TEXT_SECONDARY)
         self.summary.pack(side='left')
         self.next_button=ctk.CTkButton(footer,text='Next',width=72,fg_color=BG_CARD,text_color=TEXT_PRIMARY,
-            command=lambda:self._page(1))
+            command=lambda:self._page(1), height=CONTROL_HEIGHT, font=("Inter", CONTROL_FONT_SIZE))
         self.next_button.pack(side='right',padx=(8,0))
         self.previous_button=ctk.CTkButton(footer,text='Previous',width=82,fg_color=BG_CARD,text_color=TEXT_PRIMARY,
-            command=lambda:self._page(-1))
+            command=lambda:self._page(-1), height=CONTROL_HEIGHT, font=("Inter", CONTROL_FONT_SIZE))
         self.previous_button.pack(side='right')
 
     @staticmethod

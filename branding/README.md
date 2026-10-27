@@ -1,6 +1,6 @@
 # Focus — Spertulo Utility
 
-App name: **Focus**. Suite: **Spertulo Utility**. Version: **1.0.0**.
+App name: **Focus**. Suite: **Spertulo Utility**. Version: **1.0.1**.
 
 - `focus-logo.png`: exact copy of the user-provided `Logo Focus.png` in the project root. The red square and white F are preserved.
 - `focus.ico`: Windows icon converted from that PNG at 16, 24, 32, 48, 64, 128 and 256 pixels.

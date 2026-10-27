@@ -1,4 +1,7 @@
 """Month calendar with direct month/year navigation and an exact-date shortcut."""
+from ui.metrics import (
+    CONTROL_FONT_SIZE, CONTROL_HEIGHT, LARGE_CONTROL_HEIGHT
+)
 import calendar
 from datetime import date
 import customtkinter as ctk
@@ -55,8 +58,8 @@ class DatePicker(ctk.CTkToplevel):
         self.month_picker=FocusDropdown(navigation,menu_title='MONTH',values=list(MONTHS),
             width=140,command=lambda value:self.change_month())
         self.month_picker.grid(row=0,column=1,sticky='ew',padx=(0,8))
-        self.year_entry=ctk.CTkEntry(navigation,width=72,height=40,fg_color=INPUT_BG,
-            border_color=SEPARATOR_COLOR,font=('Inter',13),justify='center')
+        self.year_entry=ctk.CTkEntry(navigation,width=72,height=LARGE_CONTROL_HEIGHT,fg_color=INPUT_BG,
+            border_color=SEPARATOR_COLOR,font=('Inter',CONTROL_FONT_SIZE),justify='center')
         self.year_entry.grid(row=0,column=2,padx=(0,8))
         self.year_entry.bind('<Return>',lambda event:self.change_month())
         self.year_entry.bind('<FocusOut>',lambda event:self.change_month())
@@ -81,8 +84,8 @@ class DatePicker(ctk.CTkToplevel):
         direct=ctk.CTkFrame(body,fg_color='transparent')
         direct.grid(row=1,column=0,sticky='ew',padx=4,pady=(0,8))
         direct.grid_columnconfigure(0,weight=1)
-        self.date_entry=ctk.CTkEntry(direct,placeholder_text='YYYY-MM-DD',height=40,fg_color=INPUT_BG,
-            border_color=SEPARATOR_COLOR,font=('Inter',13))
+        self.date_entry=ctk.CTkEntry(direct,placeholder_text='YYYY-MM-DD',height=LARGE_CONTROL_HEIGHT,fg_color=INPUT_BG,
+            border_color=SEPARATOR_COLOR,font=('Inter',CONTROL_FONT_SIZE))
         self.date_entry.grid(row=0,column=0,sticky='ew',padx=(0,10))
         self.date_entry.insert(0,selected.isoformat())
         self.date_entry.bind('<Return>',lambda event:self.go_to_date())
@@ -99,9 +102,9 @@ class DatePicker(ctk.CTkToplevel):
 
     @staticmethod
     def _button(parent,text,command,width,primary=False):
-        return MaterialButton(parent,text=text,command=command,width=width,height=36,
+        return MaterialButton(parent,text=text,command=command,width=width,height=CONTROL_HEIGHT,
             fg_color=ACCENT_CUSTOM if primary else INPUT_BG,hover_color=HOVER_BG,
-            text_color='white' if primary else TEXT_PRIMARY,font=('Inter',12))
+            text_color='white' if primary else TEXT_PRIMARY,font=('Inter',CONTROL_FONT_SIZE))
 
     def _activate(self):
         if self._activate_job is not None: self.after_cancel(self._activate_job)

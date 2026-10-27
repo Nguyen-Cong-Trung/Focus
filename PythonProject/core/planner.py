@@ -105,6 +105,7 @@ class PlannerStore:
     def step(self, ident, index, completed):
         # Read and write in the same transaction to preserve other step edits.
         with self.db.connection() as conn:
+            conn.execute('BEGIN IMMEDIATE')
             row = conn.execute('SELECT checklist FROM planner_tasks WHERE id=?', (ident,)).fetchone()
             if not row: return
             steps = json.loads(row['checklist'])
@@ -120,6 +121,7 @@ class PlannerStore:
         now = now or datetime.now()
         # Only today's tasks, once per scheduled time. No stale notification flood.
         with self.db.connection() as conn:
+            conn.execute('BEGIN IMMEDIATE')
             rows = conn.execute("""SELECT * FROM planner_tasks WHERE day=? AND start_time<>''
                 AND start_time<=? AND completed=0 AND reminder=1 AND reminded_at=''
                 ORDER BY start_time,id""", (now.date().isoformat(), now.strftime('%H:%M'))).fetchall()

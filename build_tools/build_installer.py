@@ -26,7 +26,7 @@ def artwork():
     draw.text((64, 846), 'your best work.', font=regular, fill='#BCC4D0')
     draw.rounded_rectangle((64, 958, 146, 964), radius=3, fill='#E73A2E')
     draw.text((64, 1110), 'SPERTULO UTILITY', font=small, fill='#929DAD')
-    draw.text((64, 1150), 'WINDOWS / 1.0.0', font=small, fill='#929DAD')
+    draw.text((64, 1150), 'WINDOWS / 1.0.1', font=small, fill='#929DAD')
     panel.save(ROOT / 'build_tools/installer/wizard.png', optimize=True)
 
 
@@ -41,8 +41,8 @@ def main():
     subprocess.run([str(args.compiler.resolve()), '/Qp',
         '/DBundleDir=' + str(bundle), '/DReleaseDir=' + str(ROOT / 'releases'),
         str(ROOT / 'build_tools/installer/Focus.iss')], check=True, cwd=ROOT)
-    files = [ROOT / 'releases/Focus-Setup-1.0.0-Windows-x64.exe',
-             ROOT / 'releases/Focus-1.0.0-Windows-x64.zip']
+    files = [ROOT / 'releases/Focus-Setup-1.0.1-Windows-x64.exe',
+             ROOT / 'releases/Focus-1.0.1-Windows-x64.zip']
     hashes = {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in files}
     (ROOT / 'releases/SHA256SUMS.txt').write_text(
         ''.join(f'{digest}  {name}\n' for name, digest in hashes.items()), encoding='ascii')

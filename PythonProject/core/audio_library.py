@@ -49,6 +49,10 @@ class AudioLibrary:
             name, number = f'{base} ({number})', number+1
         try:
             shutil.copyfile(source, dest)
+            # A recorder/editor may still be replacing the source while Focus
+            # copies it. Validate the private snapshot, not just the earlier
+            # source header, before attaching it to the workspace database.
+            inspect_wav(dest)
             ident = self.db.save_custom_sound(CustomSound(name=name, file_path=str(dest)))
         except Exception:
             dest.unlink(missing_ok=True)

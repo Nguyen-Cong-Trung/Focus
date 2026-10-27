@@ -1,3 +1,6 @@
+from ui.metrics import (
+    CONTROL_FONT_SIZE, CONTROL_HEIGHT
+)
 from ui.design import MaterialFrame
 from ui.design import MaterialButton
 from utils.constants import SEPARATOR_COLOR
@@ -48,7 +51,7 @@ class StatsView(ctk.CTkFrame):
         bottom_frame = ctk.CTkFrame(self, fg_color="transparent")
         bottom_frame.grid(row=3, column=0, sticky="ew", padx=28, pady=(0, 20))
         
-        refresh_btn = MaterialButton(bottom_frame, text="🔄 Refresh", command=self.refresh_stats, fg_color=BG_CARD, text_color=TEXT_PRIMARY)
+        refresh_btn = MaterialButton(bottom_frame, text="🔄 Refresh", command=self.refresh_stats, fg_color=BG_CARD, text_color=TEXT_PRIMARY, height=CONTROL_HEIGHT, font=("Inter", CONTROL_FONT_SIZE))
         refresh_btn.pack(side="right")
         
         self._chart_canvas = None

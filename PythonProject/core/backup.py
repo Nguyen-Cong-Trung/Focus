@@ -178,13 +178,13 @@ class BackupManager:
                 try:
                     # SQLite backup keeps replacement consistent without an open-file rename.
                     with closing(sqlite3.connect(incoming)) as src, closing(sqlite3.connect(self.db.db_path)) as dest:
-                        src.backup(dest)
+                        DatabaseManager.backup_connection(src, dest)
                     src.close()
                     dest.close()
                     update_config(settings)
                 except Exception:
                     with closing(sqlite3.connect(rollback)) as src, closing(sqlite3.connect(self.db.db_path)) as dest:
-                        src.backup(dest)
+                        DatabaseManager.backup_connection(src, dest)
                     src.close()
                     dest.close()
                     update_config(previous)

@@ -1,0 +1,25 @@
+{
+  "app": "focus",
+  "passed": true,
+  "records": [
+    {
+      "window": "1240x800",
+      "navigation_height": 47,
+      "navigation_rows": 9,
+      "footer_visible": true
+    },
+    {
+      "window": "900x600",
+      "navigation_height": 38,
+      "navigation_rows": 9,
+      "footer_visible": true
+    },
+    {
+      "window": "1240x800",
+      "navigation_height": 47,
+      "navigation_rows": 9,
+      "footer_visible": true
+    }
+  ],
+  "errors": []
+}

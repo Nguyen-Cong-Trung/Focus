@@ -1,3 +1,6 @@
+from ui.metrics import (
+    CONTROL_FONT_SIZE, LARGE_CONTROL_HEIGHT, PRIMARY_CONTROL_HEIGHT
+)
 from ui.design import MaterialFrame
 from ui.design import MaterialButton
 import customtkinter as ctk
@@ -30,8 +33,8 @@ class ShutdownView(ctk.CTkScrollableFrame):
         self.preset_buttons = {}
         for i, minutes in enumerate((30, 60, 90, 120)):
             button = MaterialButton(presets, text=f'{minutes} min', fg_color=BG_CARD, hover_color=HOVER_BG,
-                          text_color=TEXT_PRIMARY, height=40, width=90,
-                          command=lambda m=minutes: self._preset(m), border_width=1, border_color=SEPARATOR_COLOR)
+                          text_color=TEXT_PRIMARY, height=LARGE_CONTROL_HEIGHT, width=90,
+                          command=lambda m=minutes: self._preset(m), border_width=1, border_color=SEPARATOR_COLOR, font=("Inter", CONTROL_FONT_SIZE))
             button.grid(row=0, column=i, padx=5, sticky='ew')
             self.preset_buttons[minutes] = button
         entry_row = ctk.CTkFrame(self, fg_color='transparent')
@@ -49,12 +52,12 @@ class ShutdownView(ctk.CTkScrollableFrame):
             self.entries.append(entry)
         actions = ctk.CTkFrame(self, fg_color='transparent')
         actions.grid(row=5, column=0, padx=28, pady=(0, 18))
-        self.schedule_button = MaterialButton(actions, text='Schedule shutdown', width=180, height=46, corner_radius=12,
-                                            fg_color=ACCENT_COLOR, hover_color=ACCENT_HOVER, command=self._schedule)
+        self.schedule_button = MaterialButton(actions, text='Schedule shutdown', width=180, height=PRIMARY_CONTROL_HEIGHT, corner_radius=12,
+                                            fg_color=ACCENT_COLOR, hover_color=ACCENT_HOVER, command=self._schedule, font=("Inter", CONTROL_FONT_SIZE))
         self.schedule_button.pack(side='left', padx=6)
-        MaterialButton(actions, text='Cancel shutdown', width=180, height=46, corner_radius=12,
+        MaterialButton(actions, text='Cancel shutdown', width=180, height=PRIMARY_CONTROL_HEIGHT, corner_radius=12,
                       fg_color=BG_CARD, hover_color=HOVER_BG, text_color=TEXT_PRIMARY,
-                      command=self._cancel).pack(side='left', padx=6)
+                      command=self._cancel, font=("Inter", CONTROL_FONT_SIZE)).pack(side='left', padx=6)
         ctk.CTkLabel(self, text='Save your work first. Windows may force apps to close when the countdown ends.\n'
                      'The schedule stays active after Focus closes. Cancel also clears schedules set outside this app.',
                      text_color=TEXT_SECONDARY, wraplength=560, justify='center').grid(row=6, column=0, padx=28, pady=12)
@@ -113,12 +116,19 @@ class ShutdownView(ctk.CTkScrollableFrame):
             self._render()
             if error:
                 CTkMessagebox(title='Shutdown schedule',message=str(error),icon='cancel')
-        app.run_background(function,lambda _:done(),lambda exc:done(exc))
+        try:
+            future = app.run_background(function,lambda _:done(),lambda exc:done(exc))
+            if future is None:
+                done(RuntimeError('Focus could not start the operation. Quit Focus and reopen it, then try again.'))
+        except Exception as exc:
+            done(exc)
 
     def _cancel(self):
         self._execute(self.scheduler.cancel)
 
     def _render(self):
+        if not self._busy and self.scheduler.refresh():
+            self._preview()
         active = self.scheduler.deadline is not None
         snapshot=(self.scheduler.deadline,self.scheduler.remaining_seconds if active else None,
             self.scheduler.restored,self._busy)

@@ -1,3 +1,6 @@
+from ui.metrics import (
+    CONTROL_FONT_SIZE, LARGE_CONTROL_HEIGHT, PAGE_TITLE_SIZE, PRIMARY_CONTROL_HEIGHT, PRIMARY_FONT_SIZE
+)
 from ui.dropdown import FocusDropdown
 from ui.design import MaterialFrame
 from ui.design import MaterialButton
@@ -20,7 +23,7 @@ class TimerView(ctk.CTkFrame):
         self._compact = False
         self.header_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.header_frame.pack(fill="x", padx=28, pady=(22, 16))
-        self.title_label = ctk.CTkLabel(self.header_frame, text="Focus Timer", font=("Inter", 28, "bold"), text_color=TEXT_PRIMARY)
+        self.title_label = ctk.CTkLabel(self.header_frame, text="Focus Timer", font=("Inter", PAGE_TITLE_SIZE, "bold"), text_color=TEXT_PRIMARY)
         self.title_label.pack(side="left")
         self.mode_frame = ctk.CTkFrame(self.header_frame, fg_color="transparent")
         self.mode_frame.pack(side="right")
@@ -30,9 +33,9 @@ class TimerView(ctk.CTkFrame):
             button_hover_color=HOVER_BG, text_color=TEXT_PRIMARY, font=("Inter", 13),
             width=170, height=40, corner_radius=10)
         self.mode_dropdown.pack(side="left", padx=(0, 10))
-        self.mini_btn = MaterialButton(self.header_frame, text="Mini", width=54, height=40,
+        self.mini_btn = MaterialButton(self.header_frame, text="Mini", width=54, height=LARGE_CONTROL_HEIGHT,
             fg_color=BG_CARD, hover_color=HOVER_BG, text_color=TEXT_SECONDARY,
-            border_width=1, border_color=SEPARATOR_COLOR, command=self._toggle_mini_player)
+            border_width=1, border_color=SEPARATOR_COLOR, command=self._toggle_mini_player, font=("Inter", CONTROL_FONT_SIZE))
         self.mini_btn.pack(side="right", padx=(10, 0))
 
         self.insights_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -55,7 +58,7 @@ class TimerView(ctk.CTkFrame):
         controls = []
         for i, (text, command) in enumerate(buttons):
             button = MaterialButton(self.bottom_frame, text=text, command=command, width=156 if i==0 else 114,
-                height=44, corner_radius=10, font=("Inter", 14, "bold"),
+                height=PRIMARY_CONTROL_HEIGHT, corner_radius=10, font=("Inter", PRIMARY_FONT_SIZE, "bold"),
                 fg_color=ACCENT_FOCUS if i==0 else BG_CARD,
                 hover_color=ACCENT_HOVER_DARK if i==0 else HOVER_BG,
                 text_color="#FFFFFF" if i==0 else TEXT_PRIMARY,
@@ -143,7 +146,7 @@ class TimerView(ctk.CTkFrame):
             self.mini_btn.configure(text="Expand")
         else:
             self.mode_frame.pack(side="right", before=self.mini_btn)
-            self.title_label.configure(text="Focus Timer", font=("Inter", 28, "bold"))
+            self.title_label.configure(text="Focus Timer", font=("Inter", PAGE_TITLE_SIZE, "bold"))
             self.header_frame.pack_configure(padx=28, pady=(22, 16))
             self.center_frame.pack_configure(padx=28)
             self.bottom_frame.pack_configure(pady=(8, 20))

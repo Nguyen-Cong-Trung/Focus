@@ -1,4 +1,7 @@
 """A shared rounded picker with keyboard navigation and modal-safe dismissal."""
+from ui.metrics import (
+    CONTROL_FONT_SIZE, CONTROL_HEIGHT
+)
 import sys
 import tkinter as tk
 import tkinter.font as tkfont
@@ -67,8 +70,8 @@ class FocusDropdown(ctk.CTkOptionMenu):
                 display = display[:-1]
             if display != value:
                 display = display.rstrip() + "…"
-            row = ctk.CTkButton(body, text=display, height=36, anchor="w", corner_radius=7,
-                border_spacing=12, font=("Inter", 13), text_color=TEXT_PRIMARY,
+            row = ctk.CTkButton(body, text=display, height=CONTROL_HEIGHT, anchor="w", corner_radius=7,
+                border_spacing=12, font=("Inter", CONTROL_FONT_SIZE), text_color=TEXT_PRIMARY,
                 fg_color=SELECTED_BG if selected else "transparent", hover_color=HOVER_BG,
                 command=lambda i=index: self._choose(i))
             row.pack(fill="x", pady=3)

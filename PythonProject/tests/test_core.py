@@ -1,4 +1,5 @@
 import unittest
+from datetime import datetime, timedelta
 from unittest.mock import Mock, patch
 from core.timer_engine import TimerEngine
 from core.shutdown_scheduler import ShutdownScheduler
@@ -101,6 +102,81 @@ class TimerTests(unittest.TestCase):
 
 
 class ShutdownTests(unittest.TestCase):
+    def test_expired_reminder_does_not_restore_an_active_schedule(self):
+        with patch('utils.constants.load_config', return_value={
+            'shutdown_record': {'deadline': '2000-01-01T00:00:00'}
+        }), patch('utils.constants.update_config') as save, \
+                patch.object(ShutdownScheduler, '_run') as command:
+            scheduler = ShutdownScheduler(persist=True)
+        self.assertIsNone(scheduler.deadline)
+        self.assertIsNone(scheduler._monotonic_deadline)
+        self.assertFalse(scheduler.restored)
+        self.assertEqual(scheduler.remaining_seconds, 0)
+        self.assertFalse(scheduler.refresh())
+        command.assert_not_called()
+        save.assert_not_called()
+
+    def test_live_elapsed_reminder_unlocks_and_clears_persisted_record(self):
+        with patch('utils.constants.load_config', return_value={}), \
+                patch('utils.constants.update_config') as save, \
+                patch('core.shutdown_scheduler.time.monotonic', return_value=100) as clock, \
+                patch.object(ShutdownScheduler, '_run') as command:
+            scheduler = ShutdownScheduler(persist=True)
+            scheduler.schedule(60)
+            command.assert_called_once_with(['/s', '/t', '60'])
+            command.reset_mock()
+            save.reset_mock()
+            clock.return_value = 160
+
+            self.assertTrue(scheduler.refresh())
+            self.assertIsNone(scheduler.deadline)
+            self.assertIsNone(scheduler._monotonic_deadline)
+            self.assertFalse(scheduler.restored)
+            self.assertEqual(scheduler.remaining_seconds, 0)
+            save.assert_called_once_with({'shutdown_record': None})
+            self.assertFalse(scheduler.refresh())
+            save.assert_called_once()
+            command.assert_not_called()
+
+    def test_restored_future_reminder_expires_without_an_os_command(self):
+        now = datetime(2026, 10, 28, 12, 0, 0)
+        record = {'shutdown_record': {'deadline': (now + timedelta(seconds=60)).isoformat()}}
+        with patch('utils.constants.load_config', return_value=record), \
+                patch('utils.constants.update_config') as save, \
+                patch('core.shutdown_scheduler.datetime') as wall_clock, \
+                patch('core.shutdown_scheduler.time.monotonic', return_value=100) as clock, \
+                patch.object(ShutdownScheduler, '_run') as command:
+            wall_clock.now.return_value = now
+            wall_clock.fromisoformat.side_effect = datetime.fromisoformat
+            scheduler = ShutdownScheduler(persist=True)
+            self.assertTrue(scheduler.restored)
+            self.assertEqual(scheduler.remaining_seconds, 60)
+            clock.return_value = 161
+
+            self.assertTrue(scheduler.refresh())
+            self.assertIsNone(scheduler.deadline)
+            self.assertIsNone(scheduler._monotonic_deadline)
+            self.assertFalse(scheduler.restored)
+            save.assert_called_once_with({'shutdown_record': None})
+            command.assert_not_called()
+
+    def test_refresh_keeps_a_nonexpired_schedule_and_does_not_save(self):
+        with patch('core.shutdown_scheduler.time.monotonic', return_value=100) as clock, \
+                patch.object(self.scheduler, '_save_record') as save:
+            self.scheduler.schedule(60)
+            deadline = self.scheduler.deadline
+            monotonic_deadline = self.scheduler._monotonic_deadline
+            self.run.reset_mock()
+            save.reset_mock()
+            clock.return_value = 159
+
+            self.assertFalse(self.scheduler.refresh())
+            self.assertEqual(self.scheduler.deadline, deadline)
+            self.assertEqual(self.scheduler._monotonic_deadline, monotonic_deadline)
+            self.assertEqual(self.scheduler.remaining_seconds, 1)
+            save.assert_not_called()
+            self.run.assert_not_called()
+
     def setUp(self):
         self.scheduler = ShutdownScheduler()
         self.command = patch.object(self.scheduler, '_run')

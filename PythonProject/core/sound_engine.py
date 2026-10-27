@@ -26,6 +26,7 @@ class SoundEngine:
 
     BUFFER_SECONDS = 20
     CROSSFADE_SECONDS = 0.75
+    MAX_CACHE_BYTES = 64 * 1024 * 1024
 
     def __init__(self):
         self._audio_lock = threading.RLock()
@@ -137,6 +138,7 @@ class SoundEngine:
 
     # ─── Playback control ───────────────────────────────────────────
 
+    @synchronized
     def _get_or_create_buffer(self, sound_type: str, file_path: str = None) -> np.ndarray:
         """Get cached buffer or generate a new one."""
         if sound_type not in self._buffers:
@@ -155,7 +157,23 @@ class SoundEngine:
                 if sound_type not in generators:
                     raise ValueError("This sound is unavailable. Choose another sound in Sound Studio.")
                 self._buffers[sound_type] = generators[sound_type]()
-        return self._buffers[sound_type]
+        # Dict order is the access order; retain active streams even if their
+        # buffers exceed the idle cache budget. This avoids accumulating every
+        # six-minute import ever previewed alongside other memory-hungry apps.
+        buffer = self._buffers.pop(sound_type)
+        self._buffers[sound_type] = buffer
+        self._trim_cache(protected=(sound_type,))
+        return buffer
+
+    def _trim_cache(self, protected=()):
+        keep = set(self._streams).union(protected)
+        total = sum(buffer.nbytes for buffer in self._buffers.values())
+        for name, buffer in list(self._buffers.items()):
+            if total <= self.MAX_CACHE_BYTES:
+                break
+            if name not in keep:
+                total -= buffer.nbytes
+                del self._buffers[name]
 
     @property
     def generation(self):
@@ -182,8 +200,10 @@ class SoundEngine:
         if generation is None:
             generation = self.generation
         if not self._current(generation):
+            self._trim_cache()
             return False
         if not SOUNDDEVICE_AVAILABLE:
+            self._trim_cache()
             raise RuntimeError("Audio playback is not available. Check the Windows output device.")
 
         self.stop(sound_type)
@@ -195,13 +215,16 @@ class SoundEngine:
             buffer = self._get_or_create_buffer(sound_type, file_path)
         except Exception:
             self._volumes.pop(sound_type, None)
+            self._trim_cache()
             raise
         if not self._current(generation):
             self._volumes.pop(sound_type, None)
+            self._trim_cache()
             return False
         buf_len = len(buffer)
         if buf_len == 0:
             self._volumes.pop(sound_type, None)
+            self._trim_cache()
             raise ValueError("The selected sound file is empty.")
         self._positions[sound_type] = 0
         current_gain = 0.0
@@ -250,10 +273,12 @@ class SoundEngine:
                                      callback=callback, blocksize=1024, dtype='float32')
             stream.start()
             if not self._current(generation):
+                cancelled.set()
                 stream.abort()
                 stream.close()
                 self._volumes.pop(sound_type, None)
                 self._positions.pop(sound_type, None)
+                self._trim_cache()
                 return False
         except Exception:
             cancelled.set()
@@ -264,6 +289,7 @@ class SoundEngine:
                     pass
             self._volumes.pop(sound_type, None)
             self._positions.pop(sound_type, None)
+            self._trim_cache()
             self._playing.pop(sound_type, None)
             raise
         self._streams[sound_type] = stream
@@ -304,6 +330,7 @@ class SoundEngine:
             self._playing.pop(sound_type, None)
             self._volumes.pop(sound_type, None)
             self._positions.pop(sound_type, None)
+            self._trim_cache()
         else:
             self.stop_all()
 
@@ -314,6 +341,9 @@ class SoundEngine:
             self.request_stop_all()
         for stype in list(self._streams.keys()):
             self.stop(stype)
+        # Cancelled preparation may have created a large buffer without ever
+        # registering a stream, so an empty stream list still needs trimming.
+        self._trim_cache()
 
     def set_volume(self, sound_type: str, volume: float) -> None:
         """Adjust volume of a playing sound in real-time (0.0 to 1.0)."""

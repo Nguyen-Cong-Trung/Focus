@@ -1,0 +1,13 @@
+{
+  "ok": true,
+  "frozen": true,
+  "checks": [
+    "all seven offline sounds, bundled PortAudio, playback/close",
+    "Windows single-instance activation",
+    "nine views, both themes, logo/fonts and About metadata",
+    "SQLite workspace backup and restore",
+    "clean final shutdown"
+  ],
+  "name": "Focus",
+  "version": "1.0.0"
+}

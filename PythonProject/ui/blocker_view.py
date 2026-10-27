@@ -1,3 +1,7 @@
+from ui.metrics import LARGE_CONTROL_HEIGHT
+from ui.metrics import (
+    COMPACT_CONTROL_HEIGHT, COMPACT_FONT_SIZE, CONTROL_FONT_SIZE, CONTROL_HEIGHT
+)
 from ui.dropdown import FocusDropdown
 from ui.design import MaterialFrame
 from ui.panels import fit_wrap
@@ -36,7 +40,7 @@ class BlockerView(ctk.CTkFrame):
         self.mode_dropdown = FocusDropdown(context, values=["Default"], variable=self.mode_var,
             command=self._on_mode_changed, width=190, height=32, fg_color=BG_CARD,
             button_color=BG_CARD, button_hover_color=HOVER_BG, text_color=TEXT_PRIMARY,
-            font=("Inter", 15, "bold"), corner_radius=6, dynamic_resizing=False)
+            font=("Inter", CONTROL_FONT_SIZE, "bold"), corner_radius=6, dynamic_resizing=False)
         self.mode_dropdown.grid(row=1, column=1, sticky="w", padx=(0, 16), pady=(0, 16))
         admin = self.site_blocker.is_admin()
         status = ctk.CTkFrame(context, fg_color="transparent")
@@ -60,11 +64,11 @@ class BlockerView(ctk.CTkFrame):
         library.grid_rowconfigure(2, weight=1)
         self.tabs_frame = ctk.CTkFrame(library, fg_color="transparent")
         self.tabs_frame.grid(row=0, column=0, sticky="ew", padx=20, pady=(18, 14))
-        self.btn_tab_web = ctk.CTkButton(self.tabs_frame, text="Websites", width=135, height=36,
-            font=("Inter", 13, "bold"), corner_radius=8, command=lambda: self._switch_tab("web"))
+        self.btn_tab_web = ctk.CTkButton(self.tabs_frame, text="Websites", width=135, height=CONTROL_HEIGHT,
+            font=("Inter", CONTROL_FONT_SIZE, "bold"), corner_radius=8, command=lambda: self._switch_tab("web"))
         self.btn_tab_web.pack(side="left", padx=(0, 6))
-        self.btn_tab_app = ctk.CTkButton(self.tabs_frame, text="Applications", width=145, height=36,
-            font=("Inter", 13, "bold"), corner_radius=8, command=lambda: self._switch_tab("app"))
+        self.btn_tab_app = ctk.CTkButton(self.tabs_frame, text="Applications", width=145, height=CONTROL_HEIGHT,
+            font=("Inter", CONTROL_FONT_SIZE, "bold"), corner_radius=8, command=lambda: self._switch_tab("app"))
         self.btn_tab_app.pack(side="left")
         self.list_count = label(self.tabs_frame, "", 11, TEXT_SECONDARY)
         self.list_count.pack(side="right")
@@ -84,9 +88,9 @@ class BlockerView(ctk.CTkFrame):
         footer.grid(row=3, column=0, sticky="ew", padx=28, pady=(0, 20))
         footer.grid_columnconfigure(0, weight=1)
         label(footer, "Need to regain access?", 12, TEXT_SECONDARY).grid(row=0, column=0, sticky="w")
-        self.unblock_btn = ctk.CTkButton(footer, text="Unblock everything", width=164, height=34,
+        self.unblock_btn = ctk.CTkButton(footer, text="Unblock everything", width=164, height=CONTROL_HEIGHT,
             fg_color="transparent", border_width=1, border_color=SEPARATOR_COLOR,
-            text_color=TEXT_SECONDARY, hover_color=HOVER_BG, font=("Inter", 12),
+            text_color=TEXT_SECONDARY, hover_color=HOVER_BG, font=("Inter", CONTROL_FONT_SIZE),
             command=self._emergency_unblock)
         self.unblock_btn.grid(row=0, column=1, sticky="e")
         self._refresh_list()
@@ -123,13 +127,13 @@ class BlockerView(ctk.CTkFrame):
         self.web_entry = ctk.CTkEntry(
             add_frame, placeholder_text="Enter a domain, e.g. youtube.com",
             fg_color=INPUT_BG, border_color=SEPARATOR_COLOR, border_width=1, 
-            height=45, corner_radius=8, font=("Inter", 13)
+            height=LARGE_CONTROL_HEIGHT, corner_radius=8, font=("Inter", CONTROL_FONT_SIZE)
         )
         self.web_entry.grid(row=0, column=0, sticky="ew", padx=(0, 10))
         
         add_btn = MaterialButton(
             add_frame, text="Add website", command=self._add_website, 
-            width=120, height=45, corner_radius=12, font=("Inter", 15, "bold"),
+            width=120, height=LARGE_CONTROL_HEIGHT, corner_radius=12, font=("Inter", CONTROL_FONT_SIZE, "bold"),
             fg_color=ACCENT_FOCUS, hover_color=ACCENT_HOVER_DARK
         )
         add_btn.grid(row=0, column=1)
@@ -150,13 +154,13 @@ class BlockerView(ctk.CTkFrame):
         self.app_entry = ctk.CTkEntry(
             add_frame, placeholder_text="Enter an application, e.g. Discord.exe",
             fg_color=INPUT_BG, border_color=SEPARATOR_COLOR, border_width=1, 
-            height=45, corner_radius=8, font=("Inter", 13)
+            height=LARGE_CONTROL_HEIGHT, corner_radius=8, font=("Inter", CONTROL_FONT_SIZE)
         )
         self.app_entry.grid(row=0, column=0, sticky="ew", padx=(0, 10))
         
         add_btn = MaterialButton(
             add_frame, text="Add app", command=self._add_app, 
-            width=120, height=45, corner_radius=12, font=("Inter", 15, "bold"),
+            width=120, height=LARGE_CONTROL_HEIGHT, corner_radius=12, font=("Inter", CONTROL_FONT_SIZE, "bold"),
             fg_color=ACCENT_FOCUS, hover_color=ACCENT_HOVER_DARK
         )
         add_btn.grid(row=0, column=1)
@@ -207,8 +211,8 @@ class BlockerView(ctk.CTkFrame):
         ctk.CTkSwitch(row, text="", width=38, switch_width=34, switch_height=18,
             variable=switch_var, onvalue="on", offvalue="off", progress_color=ACCENT_FOCUS,
             command=lambda i=item.id, v=switch_var: self._toggle_item(i, v.get() == "on")).grid(row=0, column=2, rowspan=2, padx=(12, 20))
-        ctk.CTkButton(row, text="Remove", width=68, height=30, fg_color="transparent",
-            hover_color=HOVER_BG, text_color=TEXT_SECONDARY, font=("Inter", 11),
+        ctk.CTkButton(row, text="Remove", width=68, height=COMPACT_CONTROL_HEIGHT, fg_color="transparent",
+            hover_color=HOVER_BG, text_color=TEXT_SECONDARY, font=("Inter", COMPACT_FONT_SIZE),
             command=lambda i=item.id: self._delete_item(i)).grid(row=0, column=3, rowspan=2, padx=(0, 2))
         rule(row).grid(row=2, column=0, columnspan=4, sticky="ew")
         row.bind("<Configure>", lambda e: fit_wrap(name,max(100,e.width-220)))

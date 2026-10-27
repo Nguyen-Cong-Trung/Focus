@@ -10,7 +10,7 @@ import sys
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = '1.0.0'
+VERSION = '1.0.1'
 NAME = f'Focus-{VERSION}-Windows-x64'
 
 
@@ -23,11 +23,14 @@ def main():
         '--distpath', str(ROOT / 'dist'), '--workpath', str(ROOT / '.release-work/build'),
         str(ROOT / 'build_tools/Focus.spec')], check=True, cwd=ROOT, env=environment)
     bundle = ROOT / 'dist/Focus'
+    # Vendor macOS directory metadata is never required by the Windows runtime.
+    for metadata_file in bundle.rglob('.DS_Store'):
+        metadata_file.unlink()
     shutil.copyfile(ROOT / 'build_tools/README.txt', bundle / 'README.txt')
     shutil.copyfile(ROOT / 'build_tools/Create Desktop Shortcut.cmd', bundle / 'Create Desktop Shortcut.cmd')
     shutil.copyfile(ROOT / 'Install Desktop Shortcut.ps1', bundle / 'Install Desktop Shortcut.ps1')
     packages = ['customtkinter', 'numpy', 'sounddevice', 'Pillow', 'CTkMessagebox', 'CTkToolTip', 'keyboard', 'cffi', 'PyInstaller']
-    notices = ['Focus 1.0.0 — third-party notices',
+    notices = ['Focus 1.0.1 — third-party notices',
         'License texts are included under _internal/licenses.',
         'Python, Tcl/Tk, PortAudio and the fonts retain their respective notices.',
         'The PyInstaller bootloader is distributed under its GPL license with the bootloader exception.',

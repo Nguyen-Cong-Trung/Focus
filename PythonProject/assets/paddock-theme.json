@@ -352,7 +352,7 @@
     },
     "Windows": {
       "family": "Inter",
-      "size": 14,
+      "size": 13,
       "weight": "normal"
     },
     "Linux": {

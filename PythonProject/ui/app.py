@@ -1,3 +1,6 @@
+from ui.metrics import (
+    COMPACT_CONTROL_HEIGHT, COMPACT_FONT_SIZE, HEADER_HEIGHT, NAV_COMPACT_FONT_SIZE, NAV_COMPACT_HEIGHT, NAV_FONT_SIZE, NAV_HEIGHT, SIDEBAR_COMPACT_BREAKPOINT, SIDEBAR_WIDTH
+)
 from ui.design import MaterialFrame
 from ui.panels import fit_wrap
 import queue
@@ -102,13 +105,13 @@ class DeepFocusApp(ctk.CTk):
         from datetime import datetime
         self.grid_rowconfigure(1, weight=1)
         self.grid_columnconfigure(1, weight=1)
-        self.topbar = ctk.CTkFrame(self, fg_color=SIDEBAR_BG, height=76, corner_radius=0,
+        self.topbar = ctk.CTkFrame(self, fg_color=SIDEBAR_BG, height=HEADER_HEIGHT, corner_radius=0,
                                   border_width=1, border_color=SEPARATOR_COLOR)
         self.topbar.grid(row=0, column=0, columnspan=2, sticky="ew")
         self.topbar.grid_propagate(False)
         self.topbar.grid_rowconfigure(0, weight=1)
         self.topbar.grid_columnconfigure(1, weight=1)
-        brand = self.header_brand = ctk.CTkFrame(self.topbar, fg_color="transparent", width=232, height=74)
+        brand = self.header_brand = ctk.CTkFrame(self.topbar, fg_color="transparent", width=SIDEBAR_WIDTH, height=74)
         brand.grid(row=0, column=0, sticky="nsew")
         brand.grid_propagate(False)
         brand.grid_rowconfigure(0, weight=1)
@@ -138,7 +141,7 @@ class DeepFocusApp(ctk.CTk):
         date = ctk.CTkFrame(self.topbar, fg_color="transparent")
         date.grid(row=0, column=3, padx=(8, 26))
         ctk.CTkLabel(date, text=datetime.now().strftime("%a, %d %b").upper(), font=("Inter", 11), text_color=TEXT_SECONDARY).pack()
-        self.sidebar_frame = ctk.CTkFrame(self, width=232, corner_radius=0, fg_color=SIDEBAR_BG)
+        self.sidebar_frame = ctk.CTkFrame(self, width=SIDEBAR_WIDTH, corner_radius=0, fg_color=SIDEBAR_BG)
         self.sidebar_frame.grid(row=1, column=0, sticky="nsew")
         self.sidebar_frame.pack_propagate(False)
         ctk.CTkLabel(self.sidebar_frame, text="WORKSPACE", font=("Inter", 10, "bold"),
@@ -158,10 +161,10 @@ class DeepFocusApp(ctk.CTk):
         self.planner_message = ctk.CTkLabel(self.planner_banner,text='',font=('Inter',12),
             text_color=ICE,justify='left',anchor='w',wraplength=380)
         self.planner_message.grid(row=0,column=0,sticky='ew',padx=14,pady=12)
-        ctk.CTkButton(self.planner_banner,text='Open Planner',width=104,height=32,
-            command=lambda:self.show_view('planner')).grid(row=0,column=1,padx=(0,8),pady=12)
-        ctk.CTkButton(self.planner_banner,text='×',width=32,height=32,
-            command=self.planner_banner.pack_forget).grid(row=0,column=2,padx=(0,12),pady=12)
+        ctk.CTkButton(self.planner_banner,text='Open Planner',width=104,height=COMPACT_CONTROL_HEIGHT,
+            command=lambda:self.show_view('planner'), font=("Inter", COMPACT_FONT_SIZE)).grid(row=0,column=1,padx=(0,8),pady=12)
+        ctk.CTkButton(self.planner_banner,text='×',width=32,height=COMPACT_CONTROL_HEIGHT,
+            command=self.planner_banner.pack_forget, font=("Inter", COMPACT_FONT_SIZE)).grid(row=0,column=2,padx=(0,12),pady=12)
         self.planner_banner.bind('<Configure>',lambda event:fit_wrap(self.planner_message,
             max(150,event.width-210)),add='+')
         
@@ -255,13 +258,13 @@ class DeepFocusApp(ctk.CTk):
         self._ready_shown = True
 
     def _layout_sidebar(self, event):
-        compact = event.height < self.sidebar_frame._apply_widget_scaling(660)
+        compact = self.sidebar_frame._reverse_widget_scaling(self.winfo_height()) < SIDEBAR_COMPACT_BREAKPOINT
         if compact == self._compact_nav: return
         self._compact_nav = compact
         for button in self.nav_buttons.values():
-            button.configure(height=38 if compact else 47)
+            button.configure(height=NAV_COMPACT_HEIGHT if compact else NAV_HEIGHT)
             button.pack_configure(pady=2 if compact else 4)
-            button.btn.configure(font=('Inter',13 if compact else 14))
+            button.btn.configure(font=('Inter',NAV_COMPACT_FONT_SIZE if compact else NAV_FONT_SIZE))
         self.version_label.pack_configure(pady=10 if compact else 20)
 
     def _poll_clock(self):
@@ -273,33 +276,47 @@ class DeepFocusApp(ctk.CTk):
                     callback = self._ui_events.get_nowait()
                 except queue.Empty:
                     break
-                callback()
+                self._clock_step(callback)
                 if self._destroyed: return
-            self.work.drain()
-            if self.instance_guard and self.instance_guard.consume_activation():
-                self._tray_action('open')
-            if (self._ready_shown and not self._closing and not self.tray.available
-                    and self.state() == 'withdrawn'):
-                self.deiconify()
-                self._audio_suspended = False
-                self.report_error('The tray icon is unavailable. Focus has reopened so you can control it.')
+            self._clock_step(self.work.drain)
+            self._clock_step(self._poll_window_state)
             if not self._closing and not self._restoring:
-                self.timer_engine.tick()
+                self._clock_step(self.timer_engine.tick)
             if time.monotonic()-self._last_slow_tick >= 1:
                 self._last_slow_tick = time.monotonic()
-                self.views['sound'].refresh_playback()
+                self._clock_step(self.views['sound'].refresh_playback)
                 status = self.timer_engine.state.value.replace('_',' ').title()
                 remaining = self.timer_engine._format_time(self.timer_engine.remaining_seconds)
-                self.tray.update(f'{status} {remaining} · Blocking: {self.blocking.status}')
+                self._clock_step(lambda: self.tray.update(f'{status} {remaining} · Blocking: {self.blocking.status}'))
             if not self._closing and not self._restoring and time.monotonic()-self._last_planner_tick >= 30:
                 self._last_planner_tick = time.monotonic()
-                self._check_planner_reminders()
+                self._clock_step(self._check_planner_reminders)
         except Exception:
             logging.getLogger(__name__).exception('UI clock callback failed')
             self.report_error('An operation failed. Please check the application log in the data folder.')
         finally:
             if not self._destroyed:
                 self._clock_job = self.after(100, self._poll_clock)
+
+    def _clock_step(self, callback):
+        """A failing Windows/UI integration must not starve timer ticks."""
+        try:
+            callback()
+        except Exception:
+            logging.getLogger(__name__).exception('UI clock operation failed')
+            try:
+                self.report_error('An operation failed. Please check the application log in the data folder.')
+            except Exception:
+                logging.getLogger(__name__).exception('Could not display the operation error')
+
+    def _poll_window_state(self):
+        if self.instance_guard and self.instance_guard.consume_activation():
+            self._tray_action('open')
+        if (self._ready_shown and not self._closing and not self.tray.available
+                and self.state() == 'withdrawn'):
+            self.deiconify()
+            self._audio_suspended = False
+            self.report_error('The tray icon is unavailable. Focus has reopened so you can control it.')
 
     def run_background(self, function, success=None, error=None, lane='system'):
         return self.work.submit(function, success, error or (lambda exc: self.report_error(str(exc))), lane)
@@ -710,6 +727,13 @@ class DeepFocusApp(ctk.CTk):
                 message='Replace modes, settings, recordings and history with this backup? Your current workspace will be backed up first. Windows shutdown schedules and sign-in settings are not changed.',
                 option_1='Go back',option_2='Restore workspace')
             if answer.get()!='Restore workspace': return
+        # Native dialogs run a nested Tk loop: timer/hotkey state can change
+        # while the user is choosing a file or confirming a restore.
+        if self._restoring or self._closing or self._data_busy:
+            return
+        if action in ('restore', 'import_modes') and self.timer_engine.state != TimerState.IDLE:
+            self.report_error('Stop the current session before restoring or importing data.')
+            return
         progress = ctk.CTkToplevel(self)
         set_window_brand(progress)
         progress.title('Focus')
@@ -723,9 +747,6 @@ class DeepFocusApp(ctk.CTk):
         self._restoring = action in ("restore", "import_modes")
         if action == 'restore':
             self.stop_all_sounds()
-        manager = BackupManager(self.db,DB_DIR)
-        operation = {'backup':manager.export_workspace,'export_modes':manager.export_modes,
-                     'restore':manager.restore_workspace,'import_modes':manager.import_modes}[action]
         def run():
             if action=='restore': self.sound_engine.cleanup()
             return operation(path)
@@ -747,7 +768,15 @@ class DeepFocusApp(ctk.CTk):
             else:
                 text='Saved: '+str(result)
             self.report_error(text)
-        self.run_background(run,lambda result: done(result),lambda exc: done(error=exc))
+        try:
+            manager = BackupManager(self.db,DB_DIR)
+            operation = {'backup':manager.export_workspace,'export_modes':manager.export_modes,
+                         'restore':manager.restore_workspace,'import_modes':manager.import_modes}[action]
+            future = self.run_background(run,lambda result: done(result),lambda exc: done(error=exc))
+            if future is None:
+                done(error=RuntimeError('The data operation could not start. Please try again after reopening Focus.'))
+        except Exception as exc:
+            done(error=exc)
 
     def reload_workspace(self):
         self.config = load_config()

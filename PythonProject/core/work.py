@@ -46,7 +46,12 @@ class BackgroundWork:
             except Exception:
                 logging.getLogger(__name__).exception('Background completion callback failed')
                 if self.report:
-                    self.report('An operation finished, but its display could not be updated.')
+                    try:
+                        self.report('An operation finished, but its display could not be updated.')
+                    except Exception:
+                        # A destroyed notice widget must not block the other
+                        # queued completions or escape into the UI clock.
+                        logging.getLogger(__name__).exception('Background error display failed')
 
     def close(self):
         with self._lock:

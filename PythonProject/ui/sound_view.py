@@ -1,3 +1,6 @@
+from ui.metrics import (
+    CONTROL_FONT_SIZE, CONTROL_HEIGHT, PRIMARY_FONT_SIZE
+)
 from ui.design import MaterialFrame
 from ui.panels import fit_wrap
 from ui.design import MaterialButton
@@ -62,8 +65,8 @@ class SoundCard(MaterialFrame):
         
         # Toggle Button
         self.toggle_btn = MaterialButton(
-            self, text="▶ Play", fg_color=ACCENT_SOUND, hover_color=ACCENT_HOVER_SOUND, font=("Inter", 14, "bold"),
-            command=self._toggle_play, height=35
+            self, text="▶ Play", fg_color=ACCENT_SOUND, hover_color=ACCENT_HOVER_SOUND, font=("Inter", CONTROL_FONT_SIZE, "bold"),
+            command=self._toggle_play, height=CONTROL_HEIGHT
         )
         self.toggle_btn.grid(row=3, column=0, pady=(0, 15), padx=20, sticky="ew")
         
@@ -116,7 +119,12 @@ class SoundCard(MaterialFrame):
             self.vol_slider.configure(state='normal')
             self.sync_playback()
             if error: app.report_error('Audio could not start: '+str(error))
-        app.run_background(run,lambda _:finish(),lambda exc:finish(exc),lane='audio')
+        try:
+            future = app.run_background(run,lambda _:finish(),lambda exc:finish(exc),lane='audio')
+            if future is None:
+                finish(RuntimeError('The audio operation could not be queued. Reopen Focus and try again.'))
+        except Exception as exc:
+            finish(exc)
 
     def _on_volume_change(self, value):
         val_int = int(value)
@@ -140,9 +148,9 @@ class SoundView(ctk.CTkFrame):
         # Title
         title_frame = ctk.CTkFrame(self, fg_color=BG_PRIMARY)
         title_frame.grid(row=0, column=0, sticky="ew", padx=28, pady=(24, 8))
-        self.stop_all_button = MaterialButton(title_frame, text='Stop all sounds', width=136, height=36,
+        self.stop_all_button = MaterialButton(title_frame, text='Stop all sounds', width=136, height=CONTROL_HEIGHT,
             fg_color=INPUT_BG, hover_color=HOVER_BG, text_color=TEXT_PRIMARY,
-            command=lambda: self.winfo_toplevel().stop_all_sounds())
+            command=lambda: self.winfo_toplevel().stop_all_sounds(), font=("Inter", CONTROL_FONT_SIZE))
         self.stop_all_button.pack(side='right', padx=(16, 0))
         
         ctk.CTkLabel(title_frame, text="Sound Studio", font=("Inter", 28, "bold")).pack(anchor="w")
@@ -169,9 +177,9 @@ class SoundView(ctk.CTkFrame):
         label(sound_header, "Your sound library", 17, bold=True).grid(row=0, column=0, sticky="w")
         detail = label(sound_header, "Bring your own atmosphere. Import a WAV recording.", 12, TEXT_SECONDARY, justify="left")
         detail.grid(row=1, column=0, sticky="w", pady=(4, 0))
-        ctk.CTkButton(sound_header, text="Import WAV", width=116, height=34,
+        ctk.CTkButton(sound_header, text="Import WAV", width=116, height=CONTROL_HEIGHT,
             fg_color=INPUT_BG, text_color=TEXT_PRIMARY, hover_color=HOVER_BG,
-            font=("Inter", 12), command=self._import_sound).grid(row=0, column=1, rowspan=2, padx=(16, 0))
+            font=("Inter", CONTROL_FONT_SIZE), command=self._import_sound).grid(row=0, column=1, rowspan=2, padx=(16, 0))
         sound_header.bind("<Configure>", lambda e: fit_wrap(detail,max(200,e.width-150)))
         self.sound_list_frame = ctk.CTkFrame(sound_section, fg_color="transparent")
         self.sound_list_frame.grid(row=1, column=0, sticky="ew", padx=22, pady=(0, 18))
@@ -260,11 +268,11 @@ class SoundView(ctk.CTkFrame):
         row.grid(row=row_idx * 2, column=0, sticky="ew", padx=12, pady=6)
         row.grid_columnconfigure(1, weight=1)
         
-        icon_entry = ctk.CTkEntry(row, width=40, fg_color=INPUT_BG, border_width=1, border_color=SEPARATOR_COLOR)
+        icon_entry = ctk.CTkEntry(row, width=40, fg_color=INPUT_BG, border_width=1, border_color=SEPARATOR_COLOR, height=CONTROL_HEIGHT, font=("Inter", CONTROL_FONT_SIZE))
         icon_entry.insert(0, sound.icon)
         icon_entry.grid(row=0, column=0, padx=(0, 10))
         
-        name_entry = ctk.CTkEntry(row, fg_color=INPUT_BG, border_width=1, border_color=SEPARATOR_COLOR)
+        name_entry = ctk.CTkEntry(row, fg_color=INPUT_BG, border_width=1, border_color=SEPARATOR_COLOR, height=CONTROL_HEIGHT, font=("Inter", CONTROL_FONT_SIZE))
         name_entry.insert(0, sound.name)
         name_entry.grid(row=0, column=1, sticky="ew", padx=(0, 10))
         
@@ -279,7 +287,7 @@ class SoundView(ctk.CTkFrame):
             CTkMessagebox(title="Success", message="Sound updated!", icon="check", option_1="OK")
             self._notify_app_sounds()
             
-        save_btn = MaterialButton(row, text="Save", width=60, fg_color="transparent", border_width=1, border_color=ACCENT_CUSTOM, text_color=TEXT_PRIMARY, command=save_changes)
+        save_btn = MaterialButton(row, text="Save", width=60, fg_color="transparent", border_width=1, border_color=ACCENT_CUSTOM, text_color=TEXT_PRIMARY, command=save_changes, height=CONTROL_HEIGHT, font=("Inter", CONTROL_FONT_SIZE))
         save_btn.grid(row=0, column=2, padx=(0, 10))
         
         def delete_sound(s=sound):
@@ -299,7 +307,7 @@ class SoundView(ctk.CTkFrame):
                 app._on_modes_changed()
             app.run_background(run,done,lane='audio')
 
-        del_btn = MaterialButton(row, text="Remove", width=68, fg_color="transparent", text_color=ACCENT_DANGER, hover_color=HOVER_BG, command=delete_sound)
+        del_btn = MaterialButton(row, text="Remove", width=68, fg_color="transparent", text_color=ACCENT_DANGER, hover_color=HOVER_BG, command=delete_sound, height=CONTROL_HEIGHT, font=("Inter", CONTROL_FONT_SIZE))
         del_btn.grid(row=0, column=3)
         
         # Separator

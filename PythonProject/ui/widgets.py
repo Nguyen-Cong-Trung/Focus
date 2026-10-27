@@ -1,3 +1,6 @@
+from ui.metrics import (
+    NAV_FONT_SIZE, NAV_HEIGHT
+)
 from ui.design import MaterialFrame
 from ui.design import MaterialButton
 import math
@@ -191,7 +194,7 @@ class NavButton(ctk.CTkFrame):
     """Quiet outlined navigation with the Paddock red selection rail."""
     def __init__(self, parent, text, icon, command=None, accent_color=ACCENT_FOCUS):
         from ui.design import nav_icon
-        super().__init__(parent, fg_color="transparent", height=47)
+        super().__init__(parent, fg_color="transparent", height=NAV_HEIGHT)
         self.pack_propagate(False)
         self._icon_key = icon
         self._accent_color = accent_color
@@ -199,7 +202,7 @@ class NavButton(ctk.CTkFrame):
         self.indicator.pack(side="left", fill="y", pady=12, padx=(0, 5))
         self.btn = MaterialButton(self, text=text, image=nav_icon(icon), compound="left", anchor="w",
             command=command, fg_color=("#F5F4F2", "#0E131C"), hover_color=HOVER_BG,
-            text_color=TEXT_SECONDARY, font=("Inter", 14), corner_radius=10,
+            text_color=TEXT_SECONDARY, font=("Inter", NAV_FONT_SIZE), corner_radius=10,
             border_width=1, border_color=SEPARATOR_COLOR, height=46)
         self.btn.pack(side="left", fill="both", expand=True)
 

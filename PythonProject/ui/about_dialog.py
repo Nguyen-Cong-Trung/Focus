@@ -1,4 +1,7 @@
 """Creator information and links, presented in the workspace's visual style."""
+from ui.metrics import (
+    CONTROL_FONT_SIZE, CONTROL_HEIGHT, PRIMARY_CONTROL_HEIGHT
+)
 import webbrowser
 from urllib.parse import urlsplit
 
@@ -71,9 +74,9 @@ class AboutDialog(ctk.CTkToplevel):
             label(line, title, 10, TEXT_MUTED, True, corner_radius=0).grid(row=0, column=0, sticky='w')
             self._text(line, value, 12, color=TEXT_SECONDARY).grid(
                 row=1, column=0, sticky='ew', pady=(4, 0))
-            button = ctk.CTkButton(line, text=action, width=112, height=34,
+            button = ctk.CTkButton(line, text=action, width=112, height=CONTROL_HEIGHT,
                 fg_color=INPUT_BG, hover_color=HOVER_BG, text_color=TEXT_PRIMARY,
-                font=('Inter', 11), command=command)
+                font=('Inter', CONTROL_FONT_SIZE), command=command)
             button.grid(row=0, column=1, rowspan=2, padx=(16, 0))
             self.contact_buttons[key] = button
 
@@ -87,13 +90,13 @@ class AboutDialog(ctk.CTkToplevel):
         self.github_label = self._text(discover, profile['github_url'], 12, color=ICE)
         self.github_label.grid(row=2, column=0, sticky='ew', padx=24, pady=(12, 16))
         self.github_button = MaterialButton(discover, text='Explore more tools  ↗',
-            height=42, font=('Inter', 13, 'bold'), fg_color=ACCENT_COLOR,
+            height=PRIMARY_CONTROL_HEIGHT, font=('Inter', CONTROL_FONT_SIZE, 'bold'), fg_color=ACCENT_COLOR,
             hover_color=ACCENT_HOVER, text_color='white',
             command=lambda: self._open_link(profile['github_url']))
         self.github_button.grid(row=3, column=0, sticky='ew', padx=24)
-        self.copy_button = ctk.CTkButton(discover, text='Copy GitHub link', height=34,
+        self.copy_button = ctk.CTkButton(discover, text='Copy GitHub link', height=CONTROL_HEIGHT,
             fg_color=INPUT_BG, hover_color=HOVER_BG, text_color=TEXT_PRIMARY,
-            font=('Inter', 12), command=self._copy_link)
+            font=('Inter', CONTROL_FONT_SIZE), command=self._copy_link)
         self.copy_button.grid(row=4, column=0, sticky='ew', padx=24, pady=(8, 20))
 
         if profile.get('copyright'):
@@ -105,9 +108,9 @@ class AboutDialog(ctk.CTkToplevel):
         footer.grid_columnconfigure(0, weight=1)
         self.status = label(footer, '', 11, ICE, corner_radius=0, wraplength=330)
         self.status.grid(row=0, column=0, sticky='w', padx=(0, 12))
-        ctk.CTkButton(footer, text='Close', width=88, height=36,
+        ctk.CTkButton(footer, text='Close', width=88, height=CONTROL_HEIGHT,
             fg_color=INPUT_BG, hover_color=HOVER_BG, text_color=TEXT_PRIMARY,
-            command=self.destroy).grid(row=0, column=1)
+            command=self.destroy, font=("Inter", CONTROL_FONT_SIZE)).grid(row=0, column=1)
         content.bind('<Configure>', self._fit_text, add='+')
         content._parent_canvas.bind('<Configure>', self._fit_text, add='+')
         self._wrap_job = self.after(100, self._fit_text)

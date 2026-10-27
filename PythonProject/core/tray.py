@@ -12,12 +12,20 @@ class TrayIcon:
         self._ready = threading.Event()
         self._hwnd = None
         self._data_lock = threading.Lock()
+        self._lifecycle_lock = threading.Lock()
+        self._stopping = threading.Event()
+        self.thread = None
 
     def start(self):
         if os.name != 'nt' or os.environ.get('DEEPFOCUS_TESTING') == '1':
             return False
-        self.thread = threading.Thread(target=self._run, daemon=True, name='tray')
-        self.thread.start()
+        with self._lifecycle_lock:
+            if self._stopping.is_set():
+                return False
+            if self.thread is None or not self.thread.is_alive():
+                self._ready.clear()
+                self.thread = threading.Thread(target=self._run, daemon=True, name='tray')
+                self.thread.start()
         self._ready.wait(3)
         return self.available
 
@@ -26,6 +34,8 @@ class TrayIcon:
         self.status = status
         if self.available:
             with self._data_lock:
+                if not self.available or self._stopping.is_set():
+                    return
                 self._data.szTip = ('Focus · ' + status)[:127]
                 if not self._shell.Shell_NotifyIconW(1, self._ctypes.byref(self._data)):
                     self.available = False
@@ -34,25 +44,36 @@ class TrayIcon:
         if not self.available:
             return False
         with self._data_lock:
+            if not self.available or self._stopping.is_set():
+                return False
             self._data.szInfoTitle = title[:63]
             self._data.szInfo = message[:255]
             self._data.dwInfoFlags = 1
             self._data.uFlags |= 0x10
             try:
-                return bool(self._shell.Shell_NotifyIconW(1, self._ctypes.byref(self._data)))
+                success = bool(self._shell.Shell_NotifyIconW(1, self._ctypes.byref(self._data)))
+                if not success:
+                    self.available = False
+                return success
             finally:
                 self._data.uFlags &= ~0x10
 
     def stop(self):
-        if self._hwnd:
-            self._user.PostMessageW(self._hwnd, 0x0010, 0, 0)
-            if threading.current_thread() is not self.thread:
-                self.thread.join(timeout=2)
+        self._stopping.set()
+        self.available = False
+        with self._lifecycle_lock:
+            thread, hwnd = self.thread, self._hwnd
+        if hwnd:
+            self._user.PostMessageW(hwnd, 0x0010, 0, 0)
+        if thread and threading.current_thread() is not thread:
+            thread.join(timeout=2)
 
     def _run(self):
         import ctypes as C
         from ctypes import wintypes as W
         try:
+            if self._stopping.is_set():
+                return
             user, shell, kernel = C.windll.user32, C.windll.shell32, C.windll.kernel32
             self._ctypes, self._user, self._shell = C, user, shell
             LRESULT = C.c_ssize_t
@@ -109,8 +130,9 @@ class TrayIcon:
             @WNDPROC
             def proc(hwnd,msg,wp,lp):
                 try:
-                    if msg==taskbar_created and hasattr(self,'_data'):
-                        self.available = bool(shell.Shell_NotifyIconW(0,C.byref(self._data)))
+                    if taskbar_created and msg==taskbar_created and hasattr(self,'_data'):
+                        if not self._stopping.is_set():
+                            self.available = bool(shell.Shell_NotifyIconW(0,C.byref(self._data)))
                         return 0
                     if msg==self._callback_message:
                         if lp==0x203:
@@ -138,14 +160,14 @@ class TrayIcon:
                 raise OSError('Could not register tray window')
             hwnd=user.CreateWindowExW(0,name,name,0,0,0,0,0,None,None,instance,None)
             if not hwnd: raise OSError('Could not create tray window')
-            self._hwnd=hwnd
             icon=user.LoadImageW(None,self.icon_path,1,32,32,0x10)
             data=NOTIFYICONDATA()
             data.cbSize=C.sizeof(data)
             data.hWnd,data.uID,data.uFlags,data.uCallbackMessage,data.hIcon=hwnd,1,1|2|4,self._callback_message,icon
             data.szTip='Focus'
             self._data=data
-            self.available=bool(shell.Shell_NotifyIconW(0,C.byref(data)))
+            self._hwnd=hwnd
+            self.available = not self._stopping.is_set() and bool(shell.Shell_NotifyIconW(0,C.byref(data)))
             self._ready.set()
             if not self.available:
                 user.DestroyWindow(hwnd)
@@ -159,5 +181,6 @@ class TrayIcon:
             logging.getLogger(__name__).exception('Tray icon unavailable')
             self.available=False
         finally:
+            self.available=False
             self._hwnd=None
             self._ready.set()

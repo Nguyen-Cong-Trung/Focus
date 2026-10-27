@@ -17,9 +17,9 @@ import uuid
 import winreg
 
 ROOT = Path(__file__).resolve().parents[1]
-WORK = ROOT / '.release-work/installer-qa'
+WORK = ROOT / '.release-work/installer-qa-1.0.1'
 INSTALL = WORK / 'Installed Focus'
-SETUP = ROOT / 'releases/Focus-Setup-1.0.0-Windows-x64.exe'
+SETUP = ROOT / 'releases/Focus-Setup-1.0.1-Windows-x64.exe'
 KEY = r'Software\Microsoft\Windows\CurrentVersion\Uninstall\{139698E0-3B7B-4867-AB38-C8B37B01C9E1}_is1'
 RUN_KEY = r'Software\Microsoft\Windows\CurrentVersion\Run'
 sys.path.insert(0, str(ROOT / 'PythonProject'))
@@ -71,7 +71,7 @@ def shortcut(path):
 def set_file_version(path, version):
     from PyInstaller.utils.win32 import versioninfo
     text = (ROOT / 'build_tools/windows-version.txt').read_text(encoding='utf-8')
-    text = text.replace('(1,0,0,0)', version)
+    text = text.replace('(1,0,1,0)', version)
     version_file = WORK / 'test-version.txt'
     version_file.write_text(text, encoding='utf-8')
     versioninfo.write_version_info_to_executable(str(path), versioninfo.load_version_info_from_text_file(version_file))
@@ -130,7 +130,7 @@ def main():
         run(SETUP, [*args, '/LOG=' + str(WORK / 'fresh-install.log')])
         registered = registration()
         assert registered['DisplayName'] == 'Focus'
-        assert registered['DisplayVersion'] == '1.0.0'
+        assert registered['DisplayVersion'] == '1.0.1'
         assert registered['Publisher'] == 'Spertulo Utility'
         assert Path(registered['InstallLocation']).resolve() == INSTALL.resolve()
         assert registered['NoModify'] == 1 and registered['NoRepair'] == 1
@@ -149,22 +149,32 @@ def main():
         assert json.loads(app_report.read_text(encoding='utf-8'))['ok']
         checks.append('installed executable: audio, all views/themes, About, backup/restore and shutdown')
 
-        # Simulate an earlier installed file version, then run the real upgrade.
+        # Use the published 1.0.0 installer when available; otherwise exercise
+        # the same mechanics with a simulated older executable resource.
         unrelated = INSTALL / 'keep-user-file.txt'
         unrelated.write_text('not owned by installer', encoding='utf-8')
-        set_file_version(INSTALL / 'Focus.exe', '(0,9,0,0)')
-        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, KEY, 0, winreg.KEY_SET_VALUE | winreg.KEY_WOW64_64KEY) as key:
-            winreg.SetValueEx(key, 'DisplayVersion', 0, winreg.REG_SZ, '0.9.0')
+        previous = ROOT / 'releases/Focus-Setup-1.0.0-Windows-x64.exe'
+        if previous.is_file():
+            assert sha(previous) == 'c4e2566260662ed5e6efc1c3282bd25e43d433ffabb823f9538491c134242f4f', 'Unexpected previous installer'
+            run(uninstall, ['/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART'])
+            run(previous, [*args, '/LOG=' + str(WORK / 'previous-install.log')])
+            assert registration()['DisplayVersion'] == '1.0.0'
+            upgrade_from = 'published 1.0.0'
+        else:
+            set_file_version(INSTALL / 'Focus.exe', '(1,0,0,0)')
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER, KEY, 0, winreg.KEY_SET_VALUE | winreg.KEY_WOW64_64KEY) as key:
+                winreg.SetValueEx(key, 'DisplayVersion', 0, winreg.REG_SZ, '1.0.0')
+            upgrade_from = 'simulated 1.0.0'
         # Neither the directory nor task choice is passed: reuse saved values.
         upgrade_args = [a for a in args if not a.startswith(('/DIR=', '/TASKS='))]
         desktop.unlink()
         run(SETUP, [*upgrade_args, '/LOG=' + str(WORK / 'upgrade.log')])
         assert sha(INSTALL / 'Focus.exe') == sha(ROOT / 'dist/Focus/Focus.exe')
-        assert registration()['DisplayVersion'] == '1.0.0'
+        assert registration()['DisplayVersion'] == '1.0.1'
         assert marker.exists() and unrelated.exists()
         assert len(list(INSTALL.glob('unins*.exe'))) == 1
         assert desktop.exists() and Path(shortcut(desktop)['target']).resolve() == (INSTALL / 'Focus.exe').resolve()
-        checks.append('upgrade from simulated 0.9.0 retains install path, shortcut preference, workspace and a single uninstall entry')
+        checks.append('upgrade from ' + upgrade_from + ' retains install path, shortcut preference, workspace and a single uninstall entry')
 
         # Refuse to overwrite a newer version, including unattended setup.
         set_file_version(INSTALL / 'Focus.exe', '(2,0,0,0)')

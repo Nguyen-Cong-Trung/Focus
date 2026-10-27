@@ -14,9 +14,9 @@ import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
 REPOSITORY = 'Nguyen-Cong-Trung/Focus'
-TAG = 'v1.0.0-installer.1'
-ARCHIVE = ROOT / 'releases/Focus-1.0.0-Windows-x64.zip'
-INSTALLER = ROOT / 'releases/Focus-Setup-1.0.0-Windows-x64.exe'
+TAG = 'v1.0.1'
+ARCHIVE = ROOT / 'releases/Focus-1.0.1-Windows-x64.zip'
+INSTALLER = ROOT / 'releases/Focus-Setup-1.0.1-Windows-x64.exe'
 
 
 def main():
@@ -69,7 +69,7 @@ def main():
         raise RuntimeError('This release is already published; it will not be overwritten.')
     if release is None:
         release = request('POST', api + '/releases', {'tag_name': TAG, 'target_commitish': commit,
-            'name': 'Focus 1.0.0 — Windows Installer', 'draft': True, 'prerelease': False,
+            'name': 'Focus 1.0.1 — Windows Installer', 'draft': True, 'prerelease': False,
             'body': (ROOT / 'build_tools/release_notes.md').read_text(encoding='utf-8')})
     upload_url = release['upload_url'].split('{', 1)[0]
     if urllib.parse.urlsplit(upload_url).hostname != 'uploads.github.com':

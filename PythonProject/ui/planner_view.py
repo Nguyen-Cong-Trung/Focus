@@ -1,4 +1,7 @@
 """A weekly date strip and a calm, actionable daily agenda."""
+from ui.metrics import (
+    COMPACT_CONTROL_HEIGHT, COMPACT_FONT_SIZE, CONTROL_FONT_SIZE, CONTROL_HEIGHT, LARGE_CONTROL_HEIGHT
+)
 from dataclasses import replace
 from datetime import date, datetime, timedelta
 import sqlite3
@@ -14,9 +17,9 @@ from utils.constants import (BG_PRIMARY, BG_CARD, INPUT_BG, HOVER_BG, TEXT_PRIMA
 
 
 def button(parent, text, command, primary=False, **kwargs):
-    return MaterialButton(parent, text=text, command=command, height=36,
+    return MaterialButton(parent, text=text, command=command, height=CONTROL_HEIGHT,
         fg_color=ACCENT_CUSTOM if primary else INPUT_BG, hover_color=HOVER_BG,
-        text_color='white' if primary else TEXT_PRIMARY, font=('Inter',12), **kwargs)
+        text_color='white' if primary else TEXT_PRIMARY, font=('Inter',CONTROL_FONT_SIZE), **kwargs)
 
 
 class PlannerView(ctk.CTkFrame):
@@ -69,17 +72,17 @@ class PlannerView(ctk.CTkFrame):
         controls=ctk.CTkFrame(self,fg_color='transparent')
         controls.grid(row=4,column=0,sticky='ew',padx=28,pady=(0,12))
         controls.grid_columnconfigure(0,weight=1)
-        self.quick_entry=ctk.CTkEntry(controls,placeholder_text='Add a task for this day…',height=40,
-            fg_color=INPUT_BG,border_width=1,border_color=SEPARATOR_COLOR,font=('Inter',13))
+        self.quick_entry=ctk.CTkEntry(controls,placeholder_text='Add a task for this day…',height=LARGE_CONTROL_HEIGHT,
+            fg_color=INPUT_BG,border_width=1,border_color=SEPARATOR_COLOR,font=('Inter',CONTROL_FONT_SIZE))
         self.quick_entry.grid(row=0,column=0,sticky='ew',padx=(0,8))
         self.quick_entry.bind('<Return>',lambda event:self.quick_add())
         button(controls,'+ Add',self.quick_add,True,width=78).grid(row=0,column=1)
         button(controls,'Plan task',self.new_task,width=96).grid(row=0,column=2,padx=(8,0))
         self.day_label=label(controls,'',12,TEXT_SECONDARY)
         self.day_label.grid(row=1,column=0,sticky='w',pady=(14,0))
-        self.filter=ctk.CTkSegmentedButton(controls,values=['All','Open','Done'],height=29,
+        self.filter=ctk.CTkSegmentedButton(controls,values=['All','Open','Done'],height=COMPACT_CONTROL_HEIGHT,
             selected_color=ACCENT_CUSTOM,unselected_color=BG_CARD,text_color=TEXT_PRIMARY,
-            font=('Inter',11),command=self.set_filter)
+            font=('Inter',COMPACT_FONT_SIZE),command=self.set_filter)
         self.filter.set('All')
         self.filter.grid(row=1,column=1,columnspan=2,sticky='e',pady=(14,0))
         self.rows=ctk.CTkScrollableFrame(self,fg_color='transparent',corner_radius=0)
@@ -364,8 +367,8 @@ class TaskDialog(ctk.CTkToplevel):
 
     def _entry(self,caption,value,row,col,span=1,placeholder=''):
         label(self.form,caption,11,TEXT_SECONDARY).grid(row=row,column=col,columnspan=span,sticky='w',padx=6,pady=(12 if row else 0,6))
-        entry=ctk.CTkEntry(self.form,height=40,fg_color=INPUT_BG,border_color=SEPARATOR_COLOR,
-            border_width=1,font=('Inter',13),placeholder_text=placeholder)
+        entry=ctk.CTkEntry(self.form,height=LARGE_CONTROL_HEIGHT,fg_color=INPUT_BG,border_color=SEPARATOR_COLOR,
+            border_width=1,font=('Inter',CONTROL_FONT_SIZE),placeholder_text=placeholder)
         entry.grid(row=row+1,column=col,columnspan=span,sticky='ew',padx=6)
         entry.insert(0,value)
         return entry
@@ -379,8 +382,8 @@ class TaskDialog(ctk.CTkToplevel):
         flag=ctk.BooleanVar(value=done)
         ctk.CTkCheckBox(frame,text='',variable=flag,width=22,checkbox_width=18,checkbox_height=18,
             fg_color=ACCENT_CUSTOM).pack(side='left',padx=(0,6))
-        entry=ctk.CTkEntry(frame,placeholder_text='A small, concrete step…',height=36,fg_color=INPUT_BG,
-            border_width=0,font=('Inter',12))
+        entry=ctk.CTkEntry(frame,placeholder_text='A small, concrete step…',height=CONTROL_HEIGHT,fg_color=INPUT_BG,
+            border_width=0,font=('Inter',CONTROL_FONT_SIZE))
         entry.pack(side='left',fill='x',expand=True)
         entry.insert(0,text)
         step=(frame,entry,flag)

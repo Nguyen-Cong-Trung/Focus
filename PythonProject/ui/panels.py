@@ -1,4 +1,7 @@
 """Quiet, consistent page furniture for the workspace panels."""
+from ui.metrics import (
+    BODY_FONT_SIZE, PAGE_TITLE_SIZE
+)
 import customtkinter as ctk
 from ui.design import MaterialFrame
 from utils.constants import BG_CARD, TEXT_PRIMARY, TEXT_SECONDARY, SEPARATOR_COLOR, ICE
@@ -22,8 +25,8 @@ class PageHeader(ctk.CTkFrame):
         super().__init__(parent, fg_color="transparent")
         self.grid_columnconfigure(0, weight=1)
         label(self, category, 10, ICE, True).grid(row=0, column=0, sticky="w", pady=(0, 7))
-        label(self, title, 30, bold=True).grid(row=1, column=0, sticky="w")
-        self.description = label(self, description, 13, TEXT_SECONDARY, justify="left")
+        label(self, title, PAGE_TITLE_SIZE, bold=True).grid(row=1, column=0, sticky="w")
+        self.description = label(self, description, BODY_FONT_SIZE, TEXT_SECONDARY, justify="left")
         self.description.grid(row=2, column=0, sticky="w", pady=(5, 0))
         self.bind("<Configure>", lambda e: fit_wrap(self.description,max(220,e.width-10)))
 

@@ -17,20 +17,39 @@ class ShutdownScheduler:
             record = load_config().get('shutdown_record')
             if isinstance(record, dict):
                 try:
-                    self.deadline = datetime.fromisoformat(record['deadline'])
-                    self._monotonic_deadline = time.monotonic() + max(0, (self.deadline-datetime.now()).total_seconds())
-                    self.restored = True
+                    deadline = datetime.fromisoformat(record['deadline'])
+                    remaining = (deadline-datetime.now()).total_seconds()
+                    # An expired reminder must not lock the scheduling controls
+                    # after a reboot or a shutdown canceled outside Focus.
+                    if remaining > 0:
+                        self.deadline = deadline
+                        self._monotonic_deadline = time.monotonic() + remaining
+                        self.restored = True
                 except (ValueError, TypeError, KeyError):
                     self.deadline = None
 
-    def _save_record(self):
+    def _save_record(self, state=None):
         if self.persist:
             from utils.constants import update_config
             try:
                 update_config({'shutdown_record': {'deadline': self.deadline.isoformat()} if self.deadline else None})
             except OSError as exc:
-                state = 'Windows accepted the shutdown schedule' if self.deadline else 'Windows canceled the shutdown'
+                state = state or ('Windows accepted the shutdown schedule' if self.deadline else 'Windows canceled the shutdown')
                 raise OSError(state + ', but Focus could not save its reminder. Check the data folder permissions.') from exc
+
+    def refresh(self):
+        """Expire the app's elapsed reminder without changing Windows schedules."""
+        if self.deadline is None or self.remaining_seconds > 0:
+            return False
+        self.deadline = self._monotonic_deadline = None
+        self.restored = False
+        try:
+            self._save_record('The shutdown countdown has elapsed')
+        except OSError:
+            # A stale reminder on disk must not leave the controls locked.
+            import logging
+            logging.getLogger(__name__).exception('Could not clear the expired shutdown reminder')
+        return True
 
     @staticmethod
     def _run(arguments):

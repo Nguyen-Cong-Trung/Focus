@@ -1,3 +1,7 @@
+from ui.metrics import PRIMARY_CONTROL_HEIGHT, PRIMARY_FONT_SIZE
+from ui.metrics import (
+    CONTROL_FONT_SIZE, CONTROL_HEIGHT
+)
 from ui.design import MaterialFrame, set_window_brand
 from ui.panels import fit_wrap
 from ui.design import MaterialButton
@@ -82,7 +86,7 @@ Your data is stored in your Windows user profile, in .deepfocus. Database migrat
         # Close button
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.pack(fill="x", pady=(10, 20))
-        MaterialButton(btn_frame, text="Got it!", fg_color=ACCENT_CUSTOM, text_color="white", command=self.destroy, font=("Inter", 16, "bold"), width=200).pack()
+        MaterialButton(btn_frame, text="Got it!", fg_color=ACCENT_CUSTOM, text_color="white", command=self.destroy, font=("Inter", PRIMARY_FONT_SIZE, "bold"), width=200, height=PRIMARY_CONTROL_HEIGHT).pack()
 
 
 class ThemeCard(ctk.CTkFrame):
@@ -248,8 +252,8 @@ class SettingsView(ctk.CTkScrollableFrame):
         label(row, title, 13, bold=True).grid(row=0, column=0, sticky="w")
         detail = label(row, description, 12, TEXT_SECONDARY, justify="left")
         detail.grid(row=1, column=0, sticky="w", pady=(4, 0))
-        button = ctk.CTkButton(row, text=action, width=120, height=34, fg_color=INPUT_BG,
-            hover_color=HOVER_BG, text_color=TEXT_PRIMARY, font=("Inter", 12), command=command)
+        button = ctk.CTkButton(row, text=action, width=120, height=CONTROL_HEIGHT, fg_color=INPUT_BG,
+            hover_color=HOVER_BG, text_color=TEXT_PRIMARY, font=("Inter", CONTROL_FONT_SIZE), command=command)
         button.grid(row=0, column=1, rowspan=2, padx=(20, 0), sticky="e")
         row.bind("<Configure>", lambda e: fit_wrap(detail,max(180,e.width-160)))
         return button
@@ -363,10 +367,10 @@ class HardcoreDialog(ctk.CTkToplevel):
         btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         btn_frame.pack(fill="x", side="bottom")
         
-        cancel_btn = MaterialButton(btn_frame, text="Cancel", fg_color=INPUT_BG, hover_color=HOVER_BG, text_color=TEXT_PRIMARY, command=self.destroy)
+        cancel_btn = MaterialButton(btn_frame, text="Cancel", fg_color=INPUT_BG, hover_color=HOVER_BG, text_color=TEXT_PRIMARY, command=self.destroy, height=CONTROL_HEIGHT, font=("Inter", CONTROL_FONT_SIZE))
         cancel_btn.pack(side="right", padx=(10, 0))
         
-        save_btn = MaterialButton(btn_frame, text="Save", fg_color=ACCENT_CUSTOM, text_color="#ffffff", hover_color=ACCENT_HOVER_DARK, command=self._save)
+        save_btn = MaterialButton(btn_frame, text="Save", fg_color=ACCENT_CUSTOM, text_color="#ffffff", hover_color=ACCENT_HOVER_DARK, command=self._save, height=CONTROL_HEIGHT, font=("Inter", CONTROL_FONT_SIZE))
         save_btn.pack(side="right")
         
     def _save(self):

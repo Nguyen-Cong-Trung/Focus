@@ -22,7 +22,7 @@ with tempfile.TemporaryDirectory(dir=Path(__file__).resolve().parents[2]) as fol
     assert app.title() == 'Focus'
     assert app.header_brand_title.cget('text') == 'Focus'
     assert app.header_brand_subtitle.cget('text') == 'SPERTULO UTILITY'
-    assert app.version_label.cget('text') == 'Focus  •  v1.0.0'
+    assert app.version_label.cget('text') == 'Focus  •  v1.0.1'
     assert Path(app.tray.icon_path).name == 'focus.ico'
     assert (Path(__file__).resolve().parents[2] / 'branding/focus-logo.png').read_bytes() == (
         Path(__file__).resolve().parents[2] / 'Logo Focus.png').read_bytes()

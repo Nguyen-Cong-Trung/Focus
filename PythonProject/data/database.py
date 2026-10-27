@@ -1,6 +1,7 @@
 """Transactional, mode-scoped SQLite storage with recoverable migrations."""
 import json
 import sqlite3
+import time
 from contextlib import contextmanager, closing
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -39,7 +40,20 @@ class DatabaseManager:
 
     def backup_to(self, target):
         with closing(sqlite3.connect(self.db_path)) as source, closing(sqlite3.connect(str(target))) as dest:
-            source.backup(dest)
+            self.backup_connection(source, dest)
+
+    @staticmethod
+    def backup_connection(source, destination, timeout=10.0):
+        """Bound SQLite's busy retry loop when another app holds the database.
+
+        Connection timeout does not bound Connection.backup(), which otherwise
+        retries busy/locked pages forever (including on a source read lock).
+        """
+        deadline = time.monotonic() + timeout
+        def progress(status, remaining, total):
+            if time.monotonic() >= deadline and status != sqlite3.SQLITE_DONE:
+                raise TimeoutError('The workspace is busy in another application. Close it and try again.')
+        source.backup(destination, pages=256, progress=progress, sleep=.05)
 
     def init_db(self, active_mode_name='Default'):
         with self.connection() as conn:
@@ -139,6 +153,7 @@ class DatabaseManager:
     def add_blocked_item(self,item):
         item.value = blocklist([item.value],item.item_type)[0]
         with self.connection() as conn:
+            conn.execute('BEGIN IMMEDIATE')
             existing = conn.execute('SELECT id FROM blocked_items WHERE mode_id=? AND item_type=? AND lower(value)=lower(?)',
                                     (self.active_mode_id,item.item_type,item.value)).fetchone()
             if existing:
@@ -189,6 +204,7 @@ class DatabaseManager:
     def _write_mode(self,mode,create):
         validate_mode(mode)
         with self.connection() as conn:
+            conn.execute('BEGIN IMMEDIATE')
             if conn.execute('SELECT 1 FROM focus_modes WHERE lower(name)=lower(?) AND id!=?',(mode.name,mode.id or -1)).fetchone():
                 raise ValueError('A mode with that name already exists. Choose another name.')
             keys=[k for k in FocusMode.__dataclass_fields__ if k not in ('id','is_default')]

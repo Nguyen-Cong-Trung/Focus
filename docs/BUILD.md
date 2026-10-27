@@ -2,7 +2,7 @@
 
 For the recommended Windows installer, continue with [INSTALLER.md](INSTALLER.md) after building this bundle.
 
-Use 64-bit Python 3.12 on Windows. Runtime dependencies are pinned to the versions tested for Focus 1.0.0.
+Use 64-bit Python 3.12 on Windows. Runtime dependencies are pinned to the versions tested for Focus 1.0.1.
 
 ```powershell
 py -3.12 -m venv .runtime
@@ -10,12 +10,12 @@ py -3.12 -m venv .runtime
 .runtime\Scripts\python.exe -B build_tools\build_release.py
 ```
 
-The result is `releases/Focus-1.0.0-Windows-x64.zip`, with `SHA256SUMS.txt` beside it. Build intermediates stay in `.release-work` and the unpacked app in `dist/Focus`; neither is committed. A one-folder executable avoids unpacking the entire runtime every time the app starts. The download contains no virtual environment, source tests, IDE settings, workspace database, cached audio, personal recordings or machine-specific shortcut.
+The result is `releases/Focus-1.0.1-Windows-x64.zip`, with `SHA256SUMS.txt` beside it. Build intermediates stay in `.release-work` and the unpacked app in `dist/Focus`; neither is committed. A one-folder executable avoids unpacking the entire runtime every time the app starts. The download contains no virtual environment, source tests, IDE settings, workspace database, cached audio, personal recordings or machine-specific shortcut.
 
 The portable folder contains:
 
 ```text
-Focus-1.0.0-Windows-x64/
+Focus-1.0.1-Windows-x64/
   Focus.exe
   _internal/
   README.txt

@@ -20,3 +20,5 @@
 /maintenance/legacy*/
 /maintenance/legacy-patches.zip
 /PythonProject/test_sound.wav
+
+.work/

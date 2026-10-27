@@ -1,3 +1,6 @@
+from ui.metrics import (
+    COMPACT_FONT_SIZE, CONTROL_FONT_SIZE, LARGE_CONTROL_HEIGHT
+)
 from ui.dropdown import FocusDropdown
 from ui.panels import fit_wrap
 from ui.design import MaterialFrame
@@ -180,16 +183,16 @@ class ModeDialog(ctk.CTkToplevel):
         btn_frame.pack(fill="x", padx=28, pady=16)
         
         cancel_btn = MaterialButton(
-            btn_frame, text="Cancel", height=38, fg_color="transparent", 
+            btn_frame, text="Cancel", height=LARGE_CONTROL_HEIGHT, fg_color="transparent", 
             border_width=1, border_color=TEXT_MUTED, text_color=TEXT_PRIMARY,
-            hover_color=HOVER_BG, command=self.destroy
-        )
+            hover_color=HOVER_BG, command=self.destroy,
+            font=("Inter", CONTROL_FONT_SIZE))
         cancel_btn.pack(side="right", padx=(10, 0))
         
         save_btn = MaterialButton(
-            btn_frame, text="Save mode", height=38, fg_color=ACCENT_CUSTOM, 
-            text_color="white", hover_color=INPUT_BTN_HOVER, command=self._save
-        )
+            btn_frame, text="Save mode", height=LARGE_CONTROL_HEIGHT, fg_color=ACCENT_CUSTOM, 
+            text_color="white", hover_color=INPUT_BTN_HOVER, command=self._save,
+            font=("Inter", CONTROL_FONT_SIZE))
         save_btn.pack(side="right")
         
     def _on_whitelist_changed(self):
@@ -325,9 +328,9 @@ class CustomizerView(ctk.CTkScrollableFrame):
         toolbar.grid(row=1, column=0, sticky="ew", padx=28, pady=(0, 16))
         self.mode_count = label(toolbar, "YOUR MODES", 10, TEXT_SECONDARY, True)
         self.mode_count.pack(side="left")
-        MaterialButton(toolbar, text="+ New mode", width=132, height=38,
+        MaterialButton(toolbar, text="+ New mode", width=132, height=LARGE_CONTROL_HEIGHT,
             fg_color=ACCENT_CUSTOM, text_color="white", hover_color=INPUT_BTN_HOVER,
-            font=("Inter", 12, "bold"), corner_radius=8, command=self._create_mode).pack(side="right")
+            font=("Inter", CONTROL_FONT_SIZE, "bold"), corner_radius=8, command=self._create_mode).pack(side="right")
         self.list_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.list_frame.grid(row=2, column=0, sticky="ew", padx=28, pady=(0, 22))
         self._mode_cards = []
@@ -428,10 +431,10 @@ class CustomizerView(ctk.CTkScrollableFrame):
             label(footer, " / ".join(flags) or ("Built-in preset" if mode.is_default else "Manual flow"), 10, TEXT_SECONDARY).grid(row=0, column=0, sticky="w")
             if not mode.is_default:
                 ctk.CTkButton(footer, text="Edit", width=54, height=28, fg_color=INPUT_BG,
-                    text_color=TEXT_PRIMARY, hover_color=HOVER_BG, font=("Inter", 11),
+                    text_color=TEXT_PRIMARY, hover_color=HOVER_BG, font=("Inter", COMPACT_FONT_SIZE),
                     command=lambda m=mode: self._edit_mode(m)).grid(row=0, column=1, padx=(8, 4))
                 ctk.CTkButton(footer, text="Delete", width=54, height=28, fg_color="transparent",
-                    text_color=TEXT_SECONDARY, hover_color=HOVER_BG, font=("Inter", 11),
+                    text_color=TEXT_SECONDARY, hover_color=HOVER_BG, font=("Inter", COMPACT_FONT_SIZE),
                     command=lambda m=mode: self._delete_mode(m)).grid(row=0, column=2)
         self._mode_columns = None
         self._layout_modes()

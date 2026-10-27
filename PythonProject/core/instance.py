@@ -45,8 +45,9 @@ class SingleInstance:
         self.is_primary = error != 183  # ERROR_ALREADY_EXISTS
         running = kernel.CreateMutexW(None, False, self.INSTALLER_MUTEX)
         if not running:
+            error = C.get_last_error()
             self.close()
-            raise C.WinError(C.get_last_error())
+            raise C.WinError(error)
         self._handles.append(running)
 
     def activate(self):
