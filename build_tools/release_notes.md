@@ -25,7 +25,9 @@ This maintenance release improves reliability when Focus runs alongside other ap
 
 171 unit/regression tests passed, plus cold light-theme startup, UI and close-lifecycle checks. A real Tk integration check exercised both themes, all nine views, resizing, mini player, audio device-loss simulation and timer pause/resume alongside two disposable Windows processes (an independent Tk app and a CPU worker). Separate native tests launched six competing processes and verified one workspace owner.
 
-Audio hardware, app termination, hosts modifications, actual shutdown and sign-in registration are mocked or redirected to disposable test resources. No user applications were closed and no Computer Use was used. These checks do not certify every driver, VPN, antivirus or Windows configuration. See the repository's `docs/QA-1.0.1.md` for results and limitations.
+Audio hardware, app termination, hosts modifications, actual shutdown and sign-in registration are mocked or redirected to disposable test resources. No unrelated user applications were closed and no Computer Use was used. Remaining background Focus instances were stopped only with explicit user authorization before installer QA. These checks do not certify every driver, VPN, antivirus or Windows configuration. See the repository's `docs/QA-1.0.1.md` for results and limitations.
+
+The exact installer also passed a real upgrade from the published 1.0.0 installer, fresh installation, downgrade protection, shortcut choices and uninstall. Existing workspace databases/settings stayed byte-identical.
 
 ### Signing
 

@@ -25,11 +25,11 @@ Reviewed on 28 October 2026, Windows 11 x64 build 26200, Python 3.12.14. Three s
 - Real Tk coexistence smoke passed alongside an independent disposable Tk application and a CPU-load process. Both helpers stayed responsive while Focus exercised all nine views, light/dark, resizing, mini player, timer advance/pause/resume, fake output loss/retry and cleanup.
 - Cold light-theme startup, full UI workflow smoke, and close-to-tray/quit lifecycle passed.
 - The executable extracted from the final portable ZIP passed all seven bundled sounds, PortAudio import, instance activation, nine views/themes, About and isolated backup/restore; reported version 1.0.1.
-- Installer installation/upgrade/uninstall verification: pending until the user's running Focus session is closed.
+- The exact installer passed fresh install, real upgrade from the published 1.0.0 installer, downgrade rejection, running-app protection, Desktop/Start Menu choices, Windows registration and uninstall. Existing workspace databases/settings remained byte-identical. The original Desktop shortcut and startup settings were restored.
 
 ## Scope and limits
 
-Tests did not close user applications, schedule a real shutdown, sleep/log off Windows, change actual hosts, register actual global keyboard hooks or play audio on real hardware. OS/audio failures were mocked; hosts/database contention used temporary resources. Disposable processes provide real concurrency, not a compatibility certificate for every browser, conferencing client, VPN, antivirus, audio driver or Windows version. Existing workspace database/config files must remain byte-identical through installer testing. No schema migration is required for this release.
+After the user explicitly authorized stopping the remaining background Focus instances, only those verified Focus processes were stopped before installer QA. No unrelated user applications were closed. Tests did not schedule a real shutdown, sleep/log off Windows, change actual hosts, register actual global keyboard hooks or play audio on real hardware. OS/audio failures were mocked; hosts/database contention used temporary resources. Disposable processes provide real concurrency, not a compatibility certificate for every browser, conferencing client, VPN, antivirus, audio driver or Windows version. Existing workspace database/config files must remain byte-identical through installer testing. No schema migration is required for this release.
 
 The public app/installer/uninstaller remain unsigned; SHA256 verifies file integrity, not publisher identity. Previous releases are retained. Build-tool runtimes, generated intermediates, personal workspace data and unrelated output files are excluded from Git and release artifacts.
 
